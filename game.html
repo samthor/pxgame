@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link href="game.css" rel="stylesheet" type="text/css" media="screen" />
+    <link href="world.css" rel="stylesheet" type="text/css" media="screen" />
+    <script type="text/javascript" src="util.js"></script>
+    <script type="text/javascript" src="world.js"></script>
+    <script type="text/javascript">
+
+var buildWorld = function(width, height) {
+  var ww = new World(document.body, width, height);
+
+  var env = {
+    'grass': new Env(0, 'grass', 5),
+    'rock': new Env(Env.SOLID, 'rock', 2),
+    'tree': new Env(Env.SOLID | Env.LARGE, 'tree', 4),
+    'water': new Env(Env.SOLID, 'water', 2),
+  };
+  var addEnv = function(id, count) {
+    for (var i = 0; i < count; ++i) {
+      ww.addEnv(env[id]);
+    }
+  };
+
+  addEnv('grass', 50);
+  addEnv('rock', 20);
+  addEnv('water', 25);
+  addEnv('tree', 25);
+
+  return ww;
+}
+
+var CupEnt = Object.subclass(Ent, function() {
+  CupEnt.super.call(this, 'res/cup.png');
+  return this;
+});
+
+var InvEnt = Object.subclass(Ent, function(icon, title) {
+  this.icon = icon;
+  this.title = title;
+  InvEnt.super.call(this, 'res/icons/' + icon + '.png', 'item');
+  return this;
+});
+
+var InventoryManager = function(holder) {
+  var feature = document.createElement('div');
+  feature.classList.add('feature');
+  holder.appendChild(feature);
+  this.el_ = feature;
+  this.items_ = {};
+  return this;
+};
+
+InventoryManager.prototype.make = function(icon, title) {
+  return new InvEnt(icon, title);
+};
+
+InventoryManager.prototype.gain = function(inv) {
+  this.items_[inv.id] = inv;
+
+  var span = document.createElement('span');
+  span.classList.add('item');
+  var img = document.createElement('img');
+  img.src = 'res/icons/' + inv.icon + '.png';
+  img.title = inv.title;
+  span.appendChild(img);
+  
+  this.el_.appendChild(span);
+};
+
+window.addEventListener('load', function() {
+  var world = buildWorld(28, 16);
+
+  for (var i = 0; i < 2; i++) {
+    var e = new CupEnt();
+    world.place(e, world.randPoint());
+  }
+
+  // Create random naked people.
+  for (var i = 0; i < 1; ++i) {
+    (function() {
+      var naked = new Actor('res/naked0.png');
+      world.place(naked, world.randPoint());
+
+      var move = function() {
+        world.moveTo(naked, world.randPoint());
+        setTimeout(move, Math.randInt(4, 12) * 1000);
+      };
+      move();
+    })();
+  }
+
+  var manager = new InventoryManager(document.body);
+  var items = {
+    'I_C_Apple': "It's an apple! Eat it or whatever.",
+    'W_Axe014': "AXE COP",
+    'I_Scroll': "I decree...",
+    'I_C_Strawberry': "Hint: it's actually poison.",
+    'Ac_Ring03': "I DO",
+    'I_GoldCoin': "Lost to inflation.",
+    'I_Key03': "It opens a ring to my heart <3",
+    'I_Torch02': "Why can you carry this when it's on fire?",
+    'P_Medicine05': "To turn yourself into a Smurf(TM).",
+    'A_Clothing02': "Because that naked person does need some clothes.",
+  };
+  for (var k in items) {
+    var i = manager.make(k, items[k]);
+    world.place(i, world.randPoint());
+  }
+
+  var player = new Actor('res/princess0.png');
+  world.place(player, world.randPoint());
+  world.onClick = function(point) {
+    var playerAt = this.place(player);
+    this.moveTo(player, point, function(result) {
+      if (result instanceof InvEnt) {
+        world.remove(result);
+        manager.gain(result);
+      }
+    });
+  };
+});
+
+    </script>
+  </head>
+  <body>
+
+  </body>
+</html>

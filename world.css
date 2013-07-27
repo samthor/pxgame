@@ -1,0 +1,108 @@
+
+div.world {
+  display: block;
+  position: relative;
+  box-shadow: 0 1px 3px black;
+  border: 1px solid #ccc;
+  border-radius: 2px;
+  margin: 2em auto;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  background: #008936;
+}
+
+div.world > li {
+  position: absolute;
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  z-index: 0;
+  pointer-events: none;
+  -webkit-transition: opacity 0.1s ease-out;
+}
+
+div.world > li img {
+  position: absolute;
+  bottom: 0;
+  text-align: center;
+  width: 32px;
+}
+
+div.world > li.actor {
+  -webkit-transition: top 0.25s, left 0.25s;
+}
+
+div.world > li.item {
+/*  -webkit-filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.25));*/
+}
+
+div.world > li.hover {
+  display: block;
+  z-index: 999;
+  pointer-events: auto;
+  font-size: 42px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+div.world > li.hover::before {
+  content: "\2B22";
+  display: inline-block;
+  position: absolute;
+  top: -18px;
+  left: -3px;
+  color: white;
+  opacity: 0.5;
+}
+
+div.world > li.hover:active::before {
+  color: #0ca1fd;
+}
+
+div.world > li.rock {
+  background: url(res/rock.png);
+}
+div.world > li.rock1 { background-position: 32px 0; }
+
+div.world > li.grass {
+  background: url(res/grass.png);
+}
+div.world > li.grass0 { background-position: 0 32px; }
+div.world > li.grass1 { background-position: 32px 32px; }
+div.world > li.grass2 { background-position: 64px 32px; }
+div.world > li.grass3 { background-position: 0px -32px; }
+div.world > li.grass4 { background-position: 0px 0px; }
+
+div.world > li.water {
+  background: url(res/watergrass.png);
+}
+div.world > li.water1 { background-position: 0px -32px; }
+
+div.world > li.tree {
+  background: url(res/trunk.png);
+  margin-top: -32px;
+  margin-left: -32px;
+  width: 96px;
+  height: 96px;
+  opacity: 0.8;
+}
+div.world > li.tree1,
+div.world > li.tree3 {
+  background-position: 96px 0;
+}
+
+div.world > li.tree::after {
+  content: "";
+  position: absolute;
+  background: url(res/treetop.png);
+  margin-top: -64px;
+  width: 96px;
+  height: 96px;
+}
+div.world > li.tree1::after { background-position: 0 -96px; height: 128px; }
+div.world > li.tree2::after { background-position: 96px 0; }
+div.world > li.tree3::after { background-position: 96px -96px; height: 128px; }

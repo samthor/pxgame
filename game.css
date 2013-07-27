@@ -1,0 +1,50 @@
+
+html {
+  height: 100%;
+  background: #1a1a1a;
+}
+
+body {
+  margin: 0;
+  min-height: 90%;
+  padding: 0 1em 1em;
+	background: #1a1a1a;
+	background: -moz-radial-gradient(center, closest-side, #4a4a4a, #1a1a1a);
+	background: -webkit-radial-gradient(center, closest-side, #4a4a4a, #1a1a1a);
+	background: radial-gradient(center, closest-side, #4a4a4a, #1a1a1a);
+}
+
+div.feature {
+  width: 620px;
+  height: 96px;
+  background: url(res/noise.png);
+  margin: 2em auto;
+  box-shadow: 0 1px 3px black;
+  border: 1px solid #ccc;
+  border-radius: 2px;
+  position: relative;
+}
+
+div.feature::before {
+  content: "";
+  display: block;
+  width: 100%;
+  position: absolute;
+  top: 48px;
+  height: 48px;
+  background: black;
+  opacity: 0.1;
+}
+
+div.feature span.item {
+  width: 48px;
+  height: 48px;
+}
+
+div.feature span.item img {
+  margin: auto;
+  margin: 8px;
+  width: 32px;
+  height: 32px;
+  cursor: help;
+}
