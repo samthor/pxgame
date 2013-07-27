@@ -1,2 +1,5 @@
 pxgame
 ======
+
+Pixel game. Discuss!
+
