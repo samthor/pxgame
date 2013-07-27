@@ -43,7 +43,6 @@ div.world > li.item img {
 div.world > li.hover {
   display: block;
   z-index: 999;
-  pointer-events: auto;
   font-size: 42px;
   font-weight: bold;
   cursor: pointer;
@@ -89,7 +88,10 @@ div.world > li.tree {
   width: 96px;
   height: 96px;
   opacity: 0.75;
+  pointer-events: visible;  /* allows hover */
+  -webkit-transition: opacity 0.2s;
 }
+div.world > li.tree:hover { opacity: 0.25; }
 div.world > li.tree1,
 div.world > li.tree3 {
   background-position: 96px 0;
@@ -103,6 +105,7 @@ div.world > li.tree::after {
   width: 96px;
   height: 96px;
 }
+
 div.world > li.tree1::after { background-position: 0 -96px; height: 128px; }
 div.world > li.tree2::after { background-position: 96px 0; }
 div.world > li.tree3::after { background-position: 96px -96px; height: 128px; }
