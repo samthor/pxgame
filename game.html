@@ -53,6 +53,7 @@ var InventoryManager = function(holder) {
 
 /** Gains the InvEnt into this InventoryManager. */
 InventoryManager.prototype.gain = function(inv) {
+  Object.assert(inv instanceof InvEnt, "manager only takes InvEnt instances");
   this.items_[inv.id] = inv;
 
   var img = document.createElement('img');
