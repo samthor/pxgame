@@ -88,7 +88,7 @@ div.world > li.tree {
   margin-left: -32px;
   width: 96px;
   height: 96px;
-  opacity: 0.8;
+  opacity: 0.75;
 }
 div.world > li.tree1,
 div.world > li.tree3 {
