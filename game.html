@@ -58,14 +58,20 @@ InventoryManager.prototype.make = function(icon, title) {
 InventoryManager.prototype.gain = function(inv) {
   this.items_[inv.id] = inv;
 
-  var span = document.createElement('span');
-  span.classList.add('item');
   var img = document.createElement('img');
+  img.classList.add('item');
   img.src = 'res/icons/' + inv.icon + '.png';
   img.title = inv.title;
-  span.appendChild(img);
-  
-  this.el_.appendChild(span);
+  img.draggable = true;  // default, but just for sanity
+
+  img.addEventListener('dragstart', function() {
+    img.classList.add('dragged');
+  }, false);
+  img.addEventListener('dragend', function() {
+    img.classList.remove('dragged');
+  }, false);
+
+  this.el_.appendChild(img);
 };
 
 window.addEventListener('load', function() {

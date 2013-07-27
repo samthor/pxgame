@@ -36,15 +36,16 @@ div.feature::before {
   opacity: 0.1;
 }
 
-div.feature span.item {
-  width: 48px;
-  height: 48px;
+div.feature img.item {
+  width: 34px;
+  height: 34px;
+  padding: 7px;
+  display: block;
+  float: left;
+  cursor: pointer;
+  -webkit-transition: opacity 0.25s;
 }
 
-div.feature span.item img {
-  margin: auto;
-  margin: 8px;
-  width: 32px;
-  height: 32px;
-  cursor: help;
+div.feature img.item.dragged {
+  opacity: 0.2;
 }
