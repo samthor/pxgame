@@ -51,27 +51,58 @@ var InventoryManager = function(holder) {
   return this;
 };
 
-InventoryManager.prototype.make = function(icon, title) {
-  return new InvEnt(icon, title);
-};
-
+/** Gains the InvEnt into this InventoryManager. */
 InventoryManager.prototype.gain = function(inv) {
   this.items_[inv.id] = inv;
 
   var img = document.createElement('img');
+  img.inv_src_ = inv;
   img.classList.add('item');
   img.src = 'res/icons/' + inv.icon + '.png';
   img.title = inv.title;
   img.draggable = true;  // default, but just for sanity
 
-  img.addEventListener('dragstart', function() {
+  // Add the multitude of handlers required for drag/drop.
+  img.addEventListener('dragstart', function(e) {
     img.classList.add('dragged');
-  }, false);
+    e.dataTransfer.effectAllowed = 'move';
+    this.dragged_ = inv;
+  }.bind(this), false);
   img.addEventListener('dragend', function() {
     img.classList.remove('dragged');
+    delete this.dragged_;
   }, false);
+  img.addEventListener('dragenter', function(e) {
+    if (this.dragged_ && this.dragged_ != inv) {
+      img.classList.add('target');
+    }
+  }.bind(this));
+  img.addEventListener('dragleave', function(e) {
+    img.classList.remove('target');
+  });
+  img.addEventListener('dragover', function(e) {
+    e.preventDefault && e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    return false;
+  });
+  img.addEventListener('drop', function(e) {
+    img.classList.remove('target');
+    if (this.dragged_) {
+      var src = this.dragged_;
+      delete this.dragged_;
+      if (src != inv) {
+        // Can't combine an item with itself.
+        this.combine(src, inv);
+      }
+    }
+  }.bind(this));
 
   this.el_.appendChild(img);
+};
+
+/** Combine itemA and itemB. */
+InventoryManager.prototype.combine = function(itemA, itemB) {
+  console.info("Combine", itemA.title, itemB.title);
 };
 
 window.addEventListener('load', function() {
@@ -110,9 +141,14 @@ window.addEventListener('load', function() {
     'A_Clothing02': "Because that naked person does need some clothes.",
   };
   for (var k in items) {
-    var i = manager.make(k, items[k]);
+    var i = new InvEnt(k, items[k]);
     world.place(i, world.randPoint());
   }
+
+  var i = new InvEnt('C_Hat02', "WIZARD");
+  manager.gain(i);
+  var i = new InvEnt('I_Bone', "Boner");
+  manager.gain(i);
 
   var player = new Actor('res/princess0.png');
   world.place(player, world.randPoint());

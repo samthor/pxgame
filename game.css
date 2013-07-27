@@ -43,9 +43,13 @@ div.feature img.item {
   display: block;
   float: left;
   cursor: pointer;
-  -webkit-transition: opacity 0.25s;
+  -webkit-transition: opacity 0.1s, background 0.1s;
 }
 
 div.feature img.item.dragged {
-  opacity: 0.2;
+  opacity: 0.0;
+}
+
+div.feature img.item.target {
+  background: rgba(0, 128, 128, 0.5);
 }
