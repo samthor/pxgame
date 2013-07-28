@@ -13,7 +13,8 @@ var buildWorld = function(width, height) {
   var env = {
     'grass': new Env(0, 'grass', 5),
     'rock': new Env(Env.SOLID, 'rock', 2),
-    'tree': new Env(Env.SOLID | Env.LARGE, 'tree', 4),
+    'wood': new Env(Env.SOLID, 'wood', 2),
+    'tree': new Env(Env.SOLID | Env.LARGE, 'tree', 5),
     'water': new Env(Env.SOLID, 'water', 2),
   };
   var addEnv = function(id, count) {
@@ -24,8 +25,9 @@ var buildWorld = function(width, height) {
 
   addEnv('grass', 50);
   addEnv('rock', 20);
-  addEnv('water', 25);
+  addEnv('wood', 15);
   addEnv('tree', 25);
+  addEnv('water', 25);
 
   return ww;
 }
