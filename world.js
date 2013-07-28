@@ -280,7 +280,7 @@ World.prototype.idx_ = function(point) {
   if (point.x < -y_2 || point.x >= this.width - y_2) {
     return -1;
   }
-  return (point.y * this.width) + (point.x % this.width) + y_2;
+  return (point.y * this.width) + ((point.x + this.width) % this.width);
 };
 
 World.prototype.valid_ = function(point) {
