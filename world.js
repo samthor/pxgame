@@ -71,7 +71,7 @@ var World = function(holder, width, height) {
   // Grid, for debugging tiles.
   var grid = document.createElement('div');
   grid.classList.add('grid');
-  world.appendChild(grid);
+  // world.appendChild(grid);
 
   this.width = width;
   this.height = height;
