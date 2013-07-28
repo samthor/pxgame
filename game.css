@@ -15,7 +15,7 @@ body {
 }
 
 div.feature {
-  width: 620px;
+  width: 576px;
   height: 96px;
   background: url(res/noise.png);
   margin: 2em auto;
