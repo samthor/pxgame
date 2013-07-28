@@ -13,6 +13,7 @@ var Env = function(flags, type, random) {
 };
 Env.SOLID = 1;
 Env.LARGE = 2;
+Env.PART = 4;
 Env.id = 0;
 
 Env.prototype.flag = function(flag) {
@@ -301,28 +302,49 @@ World.prototype.at = function(point) {
 
 World.prototype.addEnv = function(env, point) {
   if (arguments.length == 1) {
-    point = this.randPoint();
+    // Find a free point that doesn't already have Env.
+    for (;;) {
+      point = this.randPoint();
+      var idx = this.idx_(point);
+      if (!this.envmap_[idx]) {
+        break;
+      }
+    }
   }
   Object.assert(env instanceof Env, "addEnv only works with Env");
   Object.assert(this.valid_(point), "must addEnv at valid point");
   var el = env.draw();
-
-  // Add the drawn environment to the map (TODO: draw on canvas if faster).
-  this.el_.appendChild(el);
-  this.placeAtPoint_(el, point, -1 * !env.flag(Env.LARGE));
-
-  // Place the drawn environment into |envmap_|, removing any environment
-  // already there (i.e., non-solid environment).
   var idx = this.idx_(point);
-  var prev = this.envmap_[idx];
-  prev && this.el_.removeChild(prev);
-  this.envmap_[idx] = el;
+
+  // Offset this element if it has PART flag.
+  if (env.flag(Env.PART)) {
+    el.classList.add('part');
+    if (point.y % 2 | 0) {
+      el.classList.add('part-offset');
+    } else {
+      el.classList.add('part-normal');
+    }
+  }
 
   // If this is solid, then mark it on the actual map.
   if (env.flag(Env.SOLID)) {
     Object.assert(!this.map_[idx], "can't replace Ent from map");
     this.map_[idx] = true;
   }
+
+  // Add the drawn environment to the map (TODO: draw on canvas if faster).
+  var zoffset = 0;
+  if (!env.flag(Env.LARGE) && !env.flag(Env.PART)) {
+    --zoffset;
+  }
+  this.el_.appendChild(el);
+  this.placeAtPoint_(el, point, zoffset);
+
+  // Place the drawn environment into |envmap_|, removing any environment
+  // already there (i.e., non-solid environment).
+  var prev = this.envmap_[idx];
+  prev && this.el_.removeChild(prev);
+  this.envmap_[idx] = el;
 }
 
 World.prototype.place = function(e, point) {

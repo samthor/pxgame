@@ -47,6 +47,20 @@ div.world > li.item img {
 /*  -webkit-filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.25));*/
 }
 
+/* TODO: for attention and testing */
+/*div.world > li.part {
+  background: rgba(0, 192, 0, 1.0);
+  box-shadow: 0 0 2px black inset;
+}*/
+
+div.world > li.part-offset {
+  margin-left: -8px;
+}
+
+div.world > li.part-normal {
+  margin-left: 8px;
+}
+
 div.world > li.hover {
   display: block;
   z-index: 999;

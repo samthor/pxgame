@@ -7,31 +7,6 @@
     <script type="text/javascript" src="world.js"></script>
     <script type="text/javascript">
 
-var buildWorld = function(width, height) {
-  var ww = new World(document.body, width, height);
-
-  var env = {
-    'grass': new Env(0, 'grass', 5),
-    'rock': new Env(Env.SOLID, 'rock', 2),
-    'wood': new Env(Env.SOLID, 'wood', 2),
-    'tree': new Env(Env.SOLID | Env.LARGE, 'tree', 5),
-    'water': new Env(Env.SOLID, 'water', 2),
-  };
-  var addEnv = function(id, count) {
-    for (var i = 0; i < count; ++i) {
-      ww.addEnv(env[id]);
-    }
-  };
-
-  addEnv('grass', 50);
-  addEnv('rock', 20);
-  addEnv('wood', 5);
-  addEnv('tree', 15);
-  addEnv('water', 20);
-
-  return ww;
-}
-
 var CupEnt = Object.subclass(Ent, function() {
   CupEnt.super.call(this, 'res/cup.png');
   return this;
@@ -43,6 +18,126 @@ var InvEnt = Object.subclass(Ent, function(icon, title) {
   InvEnt.super.call(this, 'res/icons/' + icon + '.png', 'item');
   return this;
 });
+
+var PartEnv = Object.subclass(Env, function(flags, icon, index) {
+  PartEnv.super.call(this, flags | Env.PART);
+  if (!(icon instanceof Image)) {
+    icon = document.getElementById(icon);
+  }
+
+  // Find the x/y origin of |index| within |icon|.
+  index = index || 0;
+  var rows = icon.width / World.GRID | 0;
+  var sx = index % rows;
+  var sy = index / rows | 0;
+
+  // Draw the icon into |canvas|.
+  this.canvas_ = document.createElement('canvas');
+  this.canvas_.width = this.canvas_.height = World.GRID;
+  var ctx = this.canvas_.getContext('2d');
+  var z = World.GRID;
+  ctx.drawImage(icon, sx * z, sy * z, z, z, 0, 0, z, z);
+
+  return this;
+});
+
+PartEnv.prototype.draw = function() {
+  // cloneNode() doesn't copy content; re-blit the dummy canvas.
+  var canvas = this.canvas_.cloneNode();
+  var ctx = canvas.getContext('2d');
+  ctx.drawImage(this.canvas_, 0, 0);
+  var li = document.createElement('li');
+  li.appendChild(canvas);
+  return li;
+};
+
+var buildWorld = function(width, height) {
+  var ww = new World(document.body, width, height);
+
+  // TODO: This is obviously a bit long.
+  var env = {
+    'grass': new Env(0, 'grass', 5),
+    'rock': new Env(Env.SOLID, 'rock', 2),
+    'wood': new Env(Env.SOLID, 'wood', 2),
+    'tree': new Env(Env.SOLID | Env.LARGE, 'tree', 5),
+    'water': new Env(Env.SOLID, 'water', 2),
+    'fence-left': new PartEnv(Env.SOLID, 'res-fence', 0),
+    'fence-mid': new PartEnv(Env.SOLID, 'res-fence', 1),
+    'fence-right': new PartEnv(Env.SOLID, 'res-fence', 2),
+    'fence-left-top': new PartEnv(Env.SOLID, 'res-fence', 6),
+    'fence-right-top': new PartEnv(Env.SOLID, 'res-fence', 8),
+    'fence-updown': new PartEnv(Env.SOLID, 'res-fence', 4),
+    'fence-bottom': new PartEnv(Env.SOLID, 'res-fence', 3),
+    'dirt-topleft': new PartEnv(0, 'res-dirt', 6),
+    'dirt-top': new PartEnv(0, 'res-dirt', 7),
+    'dirt-topright': new PartEnv(0, 'res-dirt', 8),
+    'dirt-left': new PartEnv(0, 'res-dirt', 9),
+    'dirt': new PartEnv(0, 'res-dirt', 10),
+    'dirt-right': new PartEnv(0, 'res-dirt', 11),
+    'dirt-downleft': new PartEnv(0, 'res-dirt', 12),
+    'dirt-down': new PartEnv(0, 'res-dirt', 13),
+    'dirt-downright': new PartEnv(0, 'res-dirt', 14),
+    'dirt-invdownright': new PartEnv(0, 'res-dirt', 1),
+  };
+  var addEnv = function(id, count) {
+    for (var i = 0; i < count; ++i) {
+      ww.addEnv(env[id]);
+    }
+  };
+
+  // Describe a fenced-off dirt area, and then draw it as a whole.
+  var desc = [
+    [
+      env['fence-left-top'],
+      env['fence-mid'],
+      env['fence-mid'],
+      env['fence-mid'],
+      env['fence-mid'],
+      env['fence-right-top'],
+    ],
+    [
+      env['fence-updown'],
+      env['dirt-topleft'],
+      env['dirt-top'],
+      env['dirt-top'],
+      env['dirt-topright'],
+      env['fence-updown'],
+    ],
+    [
+      env['fence-updown'],
+      env['dirt-left'],
+      env['dirt'],
+      env['dirt-invdownright'],
+      env['dirt-downright'],
+      env['fence-bottom'],
+    ],
+    [
+      env['fence-bottom'],
+      env['dirt-downleft'],
+      env['dirt-down'],
+      env['dirt-downright'],
+    ],
+  ];
+  var bx = Math.randInt(18);
+  var by = Math.randInt(10);
+  for (var y = 0; y < desc.length; ++y) {
+    var row = desc[y];
+    var off = by % 2;
+    for (var x = 0; x < row.length; ++x) {
+      var e = row[x];
+      var p = Point.make(bx + x - Math.floor((y-off) / 2), by + y);
+      e && ww.addEnv(e, p);
+    }
+  }
+
+  addEnv('grass', 50);
+  addEnv('rock', 20);
+  addEnv('wood', 5);
+  addEnv('tree', 15);
+  addEnv('water', 20);
+
+  return ww;
+}
 
 var InventoryManager = function(holder) {
   var feature = document.createElement('div');
@@ -176,6 +271,9 @@ window.addEventListener('load', function() {
     </script>
   </head>
   <body>
-
+    <div style="display: none">
+      <img src="res/fence.png" id="res-fence" />
+      <img src="res/dirt.png" id="res-dirt" />
+    </div>
   </body>
 </html>
