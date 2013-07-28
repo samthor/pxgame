@@ -272,24 +272,29 @@ World.prototype.randPoint = function(allow_used) {
   }
 };
 
-World.prototype.valid_ = function(point) {
+World.prototype.idx_ = function(point) {
   if (point.y < 0 || point.y >= this.height) {
-    return false;
+    return -1;
   }
   var y_2 = Math.floor(point.y/2);
   if (point.x < -y_2 || point.x >= this.width - y_2) {
-    return false;
+    return -1;
   }
-  return true;
-}
+  return (point.y * this.width) + (point.x % this.width) + y_2;
+};
+
+World.prototype.valid_ = function(point) {
+  return this.idx_(point) != -1;
+};
 
 /**
  * Returns the Ent at the given point, false for no object, or true for terrain
  * or out of bounds.
  */
 World.prototype.at = function(point) {
-  if (this.valid_(point)) {
-    return this.map_[(point.y * this.width) + (point.x % this.width)];
+  var idx = this.idx_(point);
+  if (idx != -1) {
+    return this.map_[idx];
   }
   return true;
 };
@@ -308,7 +313,7 @@ World.prototype.addEnv = function(env, point) {
 
   // Place the drawn environment into |envmap_|, removing any environment
   // already there (i.e., non-solid environment).
-  var idx = (point.y * this.width) + (point.x % this.width);
+  var idx = this.idx_(point);
   var prev = this.envmap_[idx];
   prev && this.el_.removeChild(prev);
   this.envmap_[idx] = el;
@@ -336,13 +341,12 @@ World.prototype.place = function(e, point) {
     this.ents_[e.id] = {ent: e};
   } else {
     // Delete this Ent from its previous location if there.
-    var pp = prev.point;
-    delete this.map_[(pp.y * this.width) + (pp.x % this.width)];
+    delete this.map_[this.idx_(prev.point)];
   }
 
   // Remove anything already at this position (perhaps we should be less
   // aggressive about this).
-  var idx = (point.y * this.width) + (point.x % this.width);
+  var idx = this.idx_(point);
   Object.assert(!this.map_[idx], "place can't overwrite another Ent");
 
   // Place this Ent on the world, both conceptually and 'physically'.
@@ -359,7 +363,7 @@ World.prototype.remove = function(e) {
     desc.move.callback();
   }
   var point = desc.point;
-  var idx = (point.y * this.width) + (point.x % this.width);
+  var idx = this.idx_(point);
   delete this.ents_[e.id];
   delete this.map_[idx];
 
