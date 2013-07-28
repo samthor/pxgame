@@ -68,6 +68,11 @@ var World = function(holder, width, height) {
   world.style.height = (height * World.GRID) + 'px';
   holder.appendChild(world);
 
+  // Grid, for debugging tiles.
+  var grid = document.createElement('div');
+  grid.classList.add('grid');
+  world.appendChild(grid);
+
   this.width = width;
   this.height = height;
   this.el_ = world;
