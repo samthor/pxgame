@@ -1,0 +1,10 @@
+{
+  "name": "adventure(PX)",
+  "description": "find the key! save the world!",
+  "version": "0.1",
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  }
+}
