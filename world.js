@@ -13,7 +13,6 @@ var Env = function(flags, type, random) {
 };
 Env.SOLID = 1;
 Env.LARGE = 2;
-Env.PART = 4;
 Env.id = 0;
 
 Env.prototype.flag = function(flag) {
@@ -69,6 +68,14 @@ var World = function(holder, width, height) {
   world.style.height = (height * World.GRID) + 'px';
   holder.appendChild(world);
 
+  this.canvas_ = document.createElement('canvas');
+  this.canvas_.width = ((width + 0.5) * World.GRID);
+  this.canvas_.height = (height * World.GRID);
+  world.appendChild(this.canvas_);
+
+  this.describePlot_ = {};
+  this.plot_ = new Array(width * height);
+
   // Grid, for debugging tiles.
   var grid = document.createElement('div');
   grid.classList.add('grid');
@@ -93,7 +100,7 @@ var World = function(holder, width, height) {
 
   world.addEventListener('mousemove', function(ev) {
     var point = this.pointAt_(ev);
-    if (this.valid_(point)) {
+    if (this.isValidPoint(point)) {
       hover.style.display = '';
       this.placeAtPoint_(hover, point, 10);
     }
@@ -273,6 +280,124 @@ World.prototype.randPoint = function(allow_used) {
   }
 };
 
+World.prototype.plot = function(plot, point) {
+  Object.assert(this.isValidPoint(point), "must plot at valid point");
+  var idx = this.idx_(point);
+
+  this.plot_[idx] = plot;
+
+  var fn = this.redraw_;
+  if (!fn.timeout_) {
+    fn.timeout_ = window.setTimeout(this.redraw_.bind(this), 0);
+  }
+};
+
+World.prototype.describePlot = function(plot, canvas) {
+  this.describePlot_[plot] = canvas;
+};
+
+/** Renders a bunch of lines onto the canvas where something is plotted there. */
+World.prototype.renderMask_ = function(lines, canvas) {
+  if (!canvas) {
+    canvas = document.createElement('canvas');
+    canvas.width = this.canvas_.width;
+    canvas.height = this.canvas_.height;
+  } else {
+    Object.assert(canvas.width == this.canvas_.width);
+    Object.assert(canvas.height == this.canvas_.height);
+  }
+  var ctx = canvas.getContext('2d');
+
+  for (var jx = 0; jx < this.width; ++jx) {
+    for (var y = 0; y < this.height; ++y) {
+      var x = jx - Math.floor(y / 2);
+      var point = Point.make(x, y);
+      var idx = this.idx_(point);
+      var value = this.plot_[idx];
+      if (!value) {
+        continue;
+      }
+
+      ctx.save();
+      ctx.lineCap = 'round';
+      ctx.translate(16, 16);
+
+      for (var j = 0; j < 6; ++j) {
+        var cand = point.go(j);
+        if (!this.isValidPoint(cand)) {
+          continue;
+        }
+        var v = this.plot_[this.idx_(cand)];
+        if (v != value) {
+          continue;
+        }
+
+        var mX = (World.GRID * cand.x) + (cand.y * (World.GRID / 2));
+        var mY = World.GRID * cand.y;
+
+        for (var i = 0; i < 6; ++i) {
+          var cand2 = cand.go(i);
+          if (cand2.equals(cand)) {
+            continue;
+          }
+
+          // Pretend that invalid points are OK; extends masks outside bounds.
+          if (this.isValidPoint(cand2)) {
+            var v = this.plot_[this.idx_(cand2)];
+            if (v != value) {
+              continue;
+            }
+          }
+
+          ctx.beginPath();
+          ctx.moveTo((World.GRID * x) + (y * (World.GRID / 2)), World.GRID * y);
+          ctx.quadraticCurveTo(mX, mY, (World.GRID * cand2.x) + (cand2.y * (World.GRID / 2)), World.GRID * cand2.y);
+
+          for (var width in lines) {
+            ctx.lineWidth = width;
+            ctx.strokeStyle = 'rgba(' + lines[width] + ')';
+            ctx.stroke();
+          }
+        }
+      }
+      ctx.restore();
+    }
+  }
+
+  return canvas;
+};
+
+World.prototype.redraw_ = function() {
+  this.redraw_.timeout_ = false;
+  this.canvas_.width = this.canvas_.width;  // clear canvas
+
+  // Draw a white (very solid) mask for the plot.
+  var mask = this.renderMask_({28: "0, 0, 0, 0.8", 32: "0, 0, 0, 0.6"});
+  var ctx = this.canvas_.getContext('2d');
+  ctx.drawImage(mask, 0, 0);
+
+  // Cover the world with plot "1".
+  // TODO: more general definition of plot
+  var desc = this.describePlot_[1];
+  for (var jx = -1; jx <= this.width; ++jx) {
+    for (var y = 0; y < this.height; ++y) {
+      var x = jx - Math.floor(y / 2);
+      var point = Point.make(x, y);
+      ctx.save();
+      ctx.translate((World.GRID * x) + (y * (World.GRID / 2)), World.GRID * y);
+      ctx.globalCompositeOperation = 'source-atop';
+      ctx.drawImage(desc, 0, 0);
+      ctx.restore();
+    }
+  }
+
+  // Draw an outline for the plot.
+  mask = this.renderMask_({32: "142, 106, 66, 0.25"});
+  mask = this.renderMask_({28: "255, 255, 255, 0.8"}, mask);
+  ctx.globalCompositeOperation = 'darker';
+  ctx.drawImage(mask, 0, 0);
+};
+
 World.prototype.idx_ = function(point) {
   if (point.y < 0 || point.y >= this.height) {
     return -1;
@@ -284,7 +409,7 @@ World.prototype.idx_ = function(point) {
   return (point.y * this.width) + ((point.x + this.width) % this.width);
 };
 
-World.prototype.valid_ = function(point) {
+World.prototype.isValidPoint = function(point) {
   return this.idx_(point) != -1;
 };
 
@@ -312,19 +437,11 @@ World.prototype.addEnv = function(env, point) {
     }
   }
   Object.assert(env instanceof Env, "addEnv only works with Env");
-  Object.assert(this.valid_(point), "must addEnv at valid point");
-  var el = env.draw();
+  Object.assert(this.isValidPoint(point), "must addEnv at valid point");
   var idx = this.idx_(point);
 
-  // Offset this element if it has PART flag.
-  if (env.flag(Env.PART)) {
-    el.classList.add('part');
-    if (point.y % 2 | 0) {
-      el.classList.add('part-offset');
-    } else {
-      el.classList.add('part-normal');
-    }
-  }
+  // Possibly draw this on a canvas, or retrieve an element (or both?).
+  var el = env.draw();
 
   // If this is solid, then mark it on the actual map.
   if (env.flag(Env.SOLID)) {
@@ -332,9 +449,9 @@ World.prototype.addEnv = function(env, point) {
     this.map_[idx] = true;
   }
 
-  // Add the drawn environment to the map (TODO: draw on canvas if faster).
+  // Add the optional element to the map.
   var zoffset = 0;
-  if (!env.flag(Env.LARGE) && !env.flag(Env.PART)) {
+  if (!env.flag(Env.LARGE)) {
     --zoffset;
   }
   this.el_.appendChild(el);
@@ -343,8 +460,10 @@ World.prototype.addEnv = function(env, point) {
   // Place the drawn environment into |envmap_|, removing any environment
   // already there (i.e., non-solid environment).
   var prev = this.envmap_[idx];
-  prev && this.el_.removeChild(prev);
-  this.envmap_[idx] = el;
+  if (prev && prev !== true) {
+    this.el_.removeChild(prev);
+  }
+  this.envmap_[idx] = el || true;
 }
 
 World.prototype.place = function(e, point) {
@@ -353,7 +472,7 @@ World.prototype.place = function(e, point) {
     return prev.point;
   }
   Object.assert(e instanceof Ent, "place takes Ent only");
-  Object.assert(this.valid_(point), "must place at valid point");
+  Object.assert(this.isValidPoint(point), "must place at valid point");
 
   // Add to this world if not already there.
   if (e.world != this) {
