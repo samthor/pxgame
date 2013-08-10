@@ -368,6 +368,7 @@ World.prototype.renderMask_ = function(lines, canvas) {
 };
 
 World.prototype.redraw_ = function() {
+  var start = new Date();
   this.redraw_.timeout_ = false;
   this.canvas_.width = this.canvas_.width;  // clear canvas
 
@@ -396,6 +397,9 @@ World.prototype.redraw_ = function() {
   mask = this.renderMask_({28: "255, 255, 255, 0.8"}, mask);
   ctx.globalCompositeOperation = 'darker';
   ctx.drawImage(mask, 0, 0);
+
+  var ms = (new Date() - start);
+  console.info('took ' + ms + 'ms to draw');
 };
 
 World.prototype.idx_ = function(point) {
