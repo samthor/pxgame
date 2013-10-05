@@ -48,21 +48,36 @@ var buildWorld = function(width, height) {
     }
   };
 
-  // Draw a semi-random path of plot (dirt for now).
-  ww.describePlot(1, canvasFromImageIndex('res-dirt', 10));
+  var dirt = new DirtPlot(ww, canvasFromImageIndex('res-dirt', 10));
   var p = ww.randPoint();
   for (var i = 0; i < 80; ++i) {
     var dir = Math.randInt(6);
     var distance = Math.randInt(1, 4);
     while (--distance) {
       var cand = p.go(dir);
-      if (!ww.isValidPoint(cand)) {
+      if (!dirt.set(cand)) {
         break;
       }
       p = cand;
-      ww.plot(1, p);
     }
   }
+  ww.el_.appendChild(dirt.render());
+
+  // Draw a semi-random path of plot (dirt for now).
+  var water = new WaterPlot(ww);
+  var p = ww.randPoint();
+  for (var i = 0; i < 80; ++i) {
+    var dir = Math.randInt(6);
+    var distance = Math.randInt(1, 4);
+    while (--distance) {
+      var cand = p.go(dir);
+      if (!water.set(cand)) {
+        break;
+      }
+      p = cand;
+    }
+  }
+  ww.el_.appendChild(water.render());
 
   addEnv('rock', 20);
   addEnv('wood', 5);

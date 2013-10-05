@@ -22,6 +22,10 @@ div.world > div.grid {
   opacity: 0.25;
 }
 
+div.world > canvas {
+  position: absolute;
+}
+
 div.world > li {
   position: absolute;
   display: inline-block;
