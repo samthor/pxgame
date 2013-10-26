@@ -1,17 +1,17 @@
 
-var CupEnt = Object.subclass(Ent, function() {
+var CupEnt = Object.subclass(pxgame.Ent, function() {
   CupEnt.super.call(this, 'res/cup.png');
   return this;
 });
 
-var InvEnt = Object.subclass(Ent, function(icon, title) {
+var InvEnt = Object.subclass(pxgame.Ent, function(icon, title) {
   this.icon = icon;
   this.title = title;
   InvEnt.super.call(this, 'res/icons/' + icon + '.png', 'item');
   return this;
 });
 
-/** Builds a small (World.GRID dimensioned) */
+/** Builds a small (pxgame.const.GRID dimensioned) */
 var canvasFromImageIndex = function(icon, index) {
   if (!(icon instanceof Image)) {
     icon = document.getElementById(icon);
@@ -19,35 +19,35 @@ var canvasFromImageIndex = function(icon, index) {
 
   // Find the x/y origin of |index| within |icon|.
   index = index || 0;
-  var rows = icon.width / World.GRID | 0;
+  var rows = icon.width / pxgame.const.GRID | 0;
   var sx = index % rows;
   var sy = index / rows | 0;
 
   // Draw the icon into |canvas|.
   var canvas = document.createElement('canvas');
-  canvas.width = canvas.height = World.GRID;
+  canvas.width = canvas.height = pxgame.const.GRID;
   var ctx = canvas.getContext('2d');
-  var z = World.GRID;
+  var z = pxgame.const.GRID;
   ctx.drawImage(icon, sx * z, sy * z, z, z, 0, 0, z, z);
   return canvas;
 };
 
 var buildWorld = function(width, height) {
-  var ww = new World(document.body, width, height);
+  var ww = new pxgame.World(document.body, width, height);
 
   var env = {
-    'grass': new Env(0, 'grass', 5),
-    'rock': new Env(Env.SOLID, 'rock', 2),
-    'wood': new Env(Env.SOLID, 'wood', 2),
-    'tree': new Env(Env.SOLID | Env.LARGE, 'tree', 5),
-    'water': new Env(Env.SOLID, 'water', 2),
+    'grass': new pxgame.Env(0, 'grass', 5),
+    'rock': new pxgame.Env(pxgame.Env.SOLID, 'rock', 2),
+    'wood': new pxgame.Env(pxgame.Env.SOLID, 'wood', 2),
+    'tree': new pxgame.Env(pxgame.Env.SOLID | pxgame.Env.LARGE, 'tree', 5),
+    'water': new pxgame.Env(pxgame.Env.SOLID, 'water', 2),
   };
   var addEnv = function(id, count) {
     for (var i = 0; i < count; ++i) {
       ww.addEnv(env[id]);
     }
   };
-
+  /*
   var dirt = new DirtPlot(ww, canvasFromImageIndex('res-dirt', 10));
   var p = ww.randPoint();
   for (var i = 0; i < 80; ++i) {
@@ -78,7 +78,7 @@ var buildWorld = function(width, height) {
     }
   }
   ww.el_.appendChild(water.render());
-
+*/
   addEnv('rock', 20);
   addEnv('wood', 5);
   addEnv('tree', 15);
@@ -165,12 +165,12 @@ window.addEventListener('load', function() {
   // Create random naked people.
   for (var i = 0; i < 1; ++i) {
     (function() {
-      var naked = new Actor('res/naked0.png');
+      var naked = new pxgame.Actor('res/naked0.png');
       world.place(naked, world.randPoint());
 
       var move = function() {
         world.moveTo(naked, world.randPoint());
-        setTimeout(move, Math.randInt(4, 12) * 1000);
+        window.setTimeout(move, Math.randInt(4, 12) * 1000);
       };
       move();
     })();
@@ -206,7 +206,7 @@ window.addEventListener('load', function() {
   var i = new InvEnt('I_Bone', "Boner");
   manager.gain(i);
 
-  var player = new Actor('res/princess0.png');
+  var player = new pxgame.Actor('res/princess0.png');
   world.place(player, world.randPoint());
   world.onClick = function(point) {
     var playerAt = this.place(player);

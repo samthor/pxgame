@@ -1,7 +1,8 @@
 
 /**
  * Return a random integer [0,range) or [range,range_max).
- * @return integer
+ *
+ * @return number
  */
 Math.randInt = function(range, range_max) {
   var base = 0;
@@ -14,12 +15,12 @@ Math.randInt = function(range, range_max) {
 
 /**
  * Does this string start with the given prefix?
+ *
+ * @param {String} prefix Prefix to check
+ * @return {boolean} Whether the string starts with it.
  */
 String.prototype.startsWith = function(prefix) {
-  if (this.length >= prefix.length && this.substr(0, prefix.length) == prefix) {
-    return true; 
-  }
-  return false;
+  return (this.substr(0, prefix.length) == prefix);
 };
 
 /**
@@ -35,7 +36,7 @@ Object.subclass = function(parent, child) {
 };
 
 /**
- * Assert some condition.
+ * Assert some condition, throwing Error if it does not hold.
  */
 Object.assert = function(cond, message) {
   if (!cond) {

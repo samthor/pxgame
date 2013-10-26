@@ -1,25 +1,28 @@
 
+// Namespace
+var pxgame = {const:{GRID: 32, FRAME: 0.2}};
+
 /**
  * Some Env represents some environment on the world. It may be reused in
  * many placements (e.g., one tree Env re-used, one rock Env re-used).
  * It has properties |solid| and |large|.
  */
-var Env = function(flags, type, random) {
-  this.id = "env" + (++Ent.id);
+pxgame.Env = function(flags, type, random) {
+  this.id = "env" + (++pxgame.Ent.id);
   this.type_ = type;
   this.random_ = random;
   this.flags_ = flags;
   return this;
 };
-Env.SOLID = 1;
-Env.LARGE = 2;
-Env.id = 0;
+pxgame.Env.SOLID = 1;
+pxgame.Env.LARGE = 2;
+pxgame.Env.id = 0;
 
-Env.prototype.flag = function(flag) {
+pxgame.Env.prototype.flag = function(flag) {
   return this.flags_ & flag;
 }
 
-Env.prototype.draw = function() {
+pxgame.Env.prototype.draw = function() {
   var t = document.createElement('li');
   t.classList.add(this.type_);
   if (this.random_) {
@@ -29,7 +32,7 @@ Env.prototype.draw = function() {
 };
 
 /** Some Ent represents an object on the world. */
-var Ent = function(img, clazz) {
+pxgame.Ent = function(img, clazz) {
   var t = document.createElement('li');
   clazz && t.classList.add(clazz);
 
@@ -44,14 +47,14 @@ var Ent = function(img, clazz) {
   t.style.display = 'none';
   this.el_ = t;
   this.img_ = timg;
-  this.id = "ent" + (++Ent.id);
+  this.id = "ent" + (++pxgame.Ent.id);
   return this;
 };
-Ent.id = 0;
+pxgame.Ent.id = 0;
 
 /** Some Actor is an Ent which can move. */
-var Actor = Object.subclass(Ent, function(img) {
-  Actor.super.call(this, img, 'actor');
+pxgame.Actor = Object.subclass(pxgame.Ent, function(img) {
+  pxgame.Actor.super.call(this, img, 'actor');
   return this;
 });
 
@@ -59,13 +62,13 @@ var Actor = Object.subclass(Ent, function(img) {
  * World creates a brand new world ("A whole new world")!
  * @constructor
  */
-var World = function(holder, width, height) {
+pxgame.World = function(holder, width, height) {
   width = Math.floor(width);
   height = Math.floor(height);
   var world = document.createElement('div');
   world.classList.add('world');
-  world.style.width = ((width + 0.5) * World.GRID) + 'px';
-  world.style.height = (height * World.GRID) + 'px';
+  world.style.width = ((width + 0.5) * pxgame.const.GRID) + 'px';
+  world.style.height = (height * pxgame.const.GRID) + 'px';
   holder.appendChild(world);
 
   // Grid, for debugging tiles.
@@ -105,7 +108,7 @@ var World = function(holder, width, height) {
   }.bind(this));
 
   // Game "loop": enact moves around the map.
-  setInterval(function() {
+  window.setInterval(function() {
     for (var k in this.moving_) {
       var desc = this.moving_[k];
       var ret = this.performMoveStep_(desc.ent, desc.point, desc.move);
@@ -113,32 +116,32 @@ var World = function(holder, width, height) {
         var callback = desc.move.callback;
         delete this.moving_[k];
         delete desc.move;
-          if (callback) {
-          setTimeout(callback.bind(this, ret), 0);
+        if (callback) {
+          window.setTimeout(callback.bind(this, ret), 0);
         }
       }
     }
-  }.bind(this), 1000 * World.FRAME);
+  }.bind(this), 1000 * pxgame.const.FRAME);
 
   return this;
 };
 
-World.prototype.pointAt_ = function(ev) {
+pxgame.World.prototype.pointAt_ = function(ev) {
   var world = this.el_;
-  var ty = Math.floor((ev.y - world.offsetTop) / World.GRID);
-  var tx = Math.floor(((ev.x - ty*(World.GRID/2)) - world.offsetLeft) / World.GRID);
+  var ty = Math.floor((ev.y - world.offsetTop) / pxgame.const.GRID);
+  var tx = Math.floor(((ev.x - ty*(pxgame.const.GRID/2)) - world.offsetLeft) / pxgame.const.GRID);
   return Point.make(tx, ty);
 };
 
-World.prototype.placeAtPoint_ = function(el, point, offset) {
-  el.style.left = (World.GRID * point.x) + (point.y * (World.GRID / 2)) + 'px';
-  el.style.top = (World.GRID * point.y) + 'px';
+pxgame.World.prototype.placeAtPoint_ = function(el, point, offset) {
+  el.style.left = (pxgame.const.GRID * point.x) + (point.y * (pxgame.const.GRID / 2)) + 'px';
+  el.style.top = (pxgame.const.GRID * point.y) + 'px';
   el.style.display = '';
   el.style.zIndex = 1000 + (point.y + (offset*100 || 0));
 };
 
 /** Returns a list of points from (src,dst], or an empty array if not found. */
-World.prototype.search_ = function(src, dst) {
+pxgame.World.prototype.search_ = function(src, dst) {
   var opts = [];
   var seen = {};
 
@@ -188,8 +191,8 @@ World.prototype.search_ = function(src, dst) {
   return [];
 };
 
-World.prototype.performMoveStep_ = function(actor, now, move) {
-  var targetIsEnt = (move.target instanceof Ent);
+pxgame.World.prototype.performMoveStep_ = function(actor, now, move) {
+  var targetIsEnt = (move.target instanceof pxgame.Ent);
   var target = (targetIsEnt ? this.place(move.target) : move.target);
   Object.assert(target, "performMoveStep_ only with target");
 
@@ -235,14 +238,14 @@ World.prototype.performMoveStep_ = function(actor, now, move) {
   }
 };
 
-World.prototype.moveTo = function(actor, target, callback) {
+pxgame.World.prototype.moveTo = function(actor, target, callback) {
   var desc = this.ents_[actor.id];
   Object.assert(desc, "Actor must be in world");
 
   // If the point actually contains an Ent, then use that as the target.
   if (target instanceof Point) {
     var at = this.at(target);
-    if (at instanceof Ent) {
+    if (at instanceof pxgame.Ent) {
       target = at;
     }
   }
@@ -257,7 +260,7 @@ World.prototype.moveTo = function(actor, target, callback) {
   this.moving_[actor.id] = desc;
 };
 
-World.prototype.randPoint = function(allow_used) {
+pxgame.World.prototype.randPoint = function(allow_used) {
   allow_used = allow_used || false;
 
   for (;;) {
@@ -272,7 +275,7 @@ World.prototype.randPoint = function(allow_used) {
   }
 };
 
-World.prototype.idx_ = function(point) {
+pxgame.World.prototype.idx_ = function(point) {
   if (point.y < 0 || point.y >= this.height) {
     return -1;
   }
@@ -283,7 +286,7 @@ World.prototype.idx_ = function(point) {
   return (point.y * this.width) + ((point.x + this.width) % this.width);
 };
 
-World.prototype.isValidPoint = function(point) {
+pxgame.World.prototype.isValidPoint = function(point) {
   return this.idx_(point) != -1;
 };
 
@@ -291,7 +294,7 @@ World.prototype.isValidPoint = function(point) {
  * Returns the Ent at the given point, false for no object, or true for terrain
  * or out of bounds.
  */
-World.prototype.at = function(point) {
+pxgame.World.prototype.at = function(point) {
   var idx = this.idx_(point);
   if (idx != -1) {
     return this.map_[idx];
@@ -299,7 +302,7 @@ World.prototype.at = function(point) {
   return true;
 };
 
-World.prototype.addEnv = function(env, point) {
+pxgame.World.prototype.addEnv = function(env, point) {
   if (arguments.length == 1) {
     // Find a free point that doesn't already have Env.
     for (;;) {
@@ -310,7 +313,7 @@ World.prototype.addEnv = function(env, point) {
       }
     }
   }
-  Object.assert(env instanceof Env, "addEnv only works with Env");
+  Object.assert(env instanceof pxgame.Env, "addEnv only works with Env");
   Object.assert(this.isValidPoint(point), "must addEnv at valid point");
   var idx = this.idx_(point);
 
@@ -318,14 +321,14 @@ World.prototype.addEnv = function(env, point) {
   var el = env.draw();
 
   // If this is solid, then mark it on the actual map.
-  if (env.flag(Env.SOLID)) {
+  if (env.flag(pxgame.Env.SOLID)) {
     Object.assert(!this.map_[idx], "can't replace Ent from map");
     this.map_[idx] = true;
   }
 
   // Add the optional element to the map.
   var zoffset = 0;
-  if (!env.flag(Env.LARGE)) {
+  if (!env.flag(pxgame.Env.LARGE)) {
     --zoffset;
   }
   this.el_.appendChild(el);
@@ -340,12 +343,12 @@ World.prototype.addEnv = function(env, point) {
   this.envmap_[idx] = el || true;
 }
 
-World.prototype.place = function(e, point) {
+pxgame.World.prototype.place = function(e, point) {
   var prev = this.ents_[e.id];
   if (arguments.length == 1) {
     return prev.point;
   }
-  Object.assert(e instanceof Ent, "place takes Ent only");
+  Object.assert(e instanceof pxgame.Ent, "place takes Ent only");
   Object.assert(this.isValidPoint(point), "must place at valid point");
 
   // Add to this world if not already there.
@@ -370,7 +373,7 @@ World.prototype.place = function(e, point) {
   this.placeAtPoint_(e.el_, point);  // do css placement
 };
 
-World.prototype.remove = function(e) {
+pxgame.World.prototype.remove = function(e) {
   var desc = this.ents_[e.id];
   Object.assert(desc, "Actor must be in world");
 
@@ -383,13 +386,10 @@ World.prototype.remove = function(e) {
   delete this.map_[idx];
 
   e.el_.style.opacity = 0;
-  setTimeout(function(el) {
+  window.setTimeout(function(el) {
     el.opacity = 1;
     this.el_.removeChild(el);
   }.bind(this, e.el_), 100);
 
   e.world = null;
 };
-
-World.GRID = 32;
-World.FRAME = 0.2;
