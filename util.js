@@ -44,10 +44,15 @@ Object.assert = function(cond, message) {
   }
 }
 
-/** Image loader helper. */
+/**
+ * Image loader helper.
+ *
+ * @param {String|Image} src Image name to load, or Image to instantiate
+ * @return {Image} Unique image, ready to use.
+ */
 Image.load = function(src) {
   var img = new Image();
-  img.src = src;
+  img.src = (src instanceof Image ? src.src : src);
   return img;
 };
 

@@ -3,25 +3,46 @@
 var pxgame = {const:{GRID: 32, FRAME: 0.2}};
 
 /**
- * Some Env represents some environment on the world. It may be reused in
- * many placements (e.g., one tree Env re-used, one rock Env re-used).
- * It has properties |solid| and |large|.
+ * Some Env represents some single type of environmental object on the world.
+ * It may be reused in many placements (e.g., a tree or a rock). It has flags
+ * SOLID (whether instances of Ent can be 'on top') and LARGE (whether it is
+ * bigger than a single hex alone).
+ *
+ * Typically this should not be subclassed.
+ *
+ * @constructor
+ * @param {number} flags Flags to set, e.g., SOLID and LARGE
+ * @param {String} type CSS class to use/set on the later generated HTML
+ * @param {random=} random Random range in [0,random] to apply as part of
+ *    the added CSS class
  */
 pxgame.Env = function(flags, type, random) {
-  this.id = "env" + (++pxgame.Ent.id);
+  this.id = "env" + (++pxgame.Ent.id_);
   this.type_ = type;
   this.random_ = random;
   this.flags_ = flags;
   return this;
 };
+pxgame.Env.id_ = 0;
 pxgame.Env.SOLID = 1;
 pxgame.Env.LARGE = 2;
-pxgame.Env.id = 0;
 
+/**
+ * Does this Env have the given flag set?
+ *
+ * @param {number} flag Flag to check for
+ * @return {boolean} Whether the flag is set
+ */
 pxgame.Env.prototype.flag = function(flag) {
   return this.flags_ & flag;
 }
 
+/**
+ * Draws this Env into its HTML equivalent (a <li>). This may be called many
+ * times.
+ *
+ * @return {Element} the HTML rendering of a single Env
+ */
 pxgame.Env.prototype.draw = function() {
   var t = document.createElement('li');
   t.classList.add(this.type_);
@@ -31,26 +52,29 @@ pxgame.Env.prototype.draw = function() {
   return t;
 };
 
-/** Some Ent represents an object on the world. */
+/**
+ * Some Ent represents an object on the world. Each instantiation is a unique
+ * object that might be interacted with.
+ *
+ * Ent should typically be subclassed, and is subclassed for free in Actor.
+ *
+ * @constructor
+ * @param {String|Image} img Image to use as the Ent's image.
+ * @param {String=} clazz Class name to add to the Ent
+ */
 pxgame.Ent = function(img, clazz) {
   var t = document.createElement('li');
   clazz && t.classList.add(clazz);
 
-  var timg = document.createElement('img');
-  if (img instanceof Image) {
-    timg.src = img.src;
-  } else {
-    timg.src = img;
-  }
-  t.appendChild(timg);
+  this.img_ = Image.load(img);
+  t.appendChild(this.img_);
 
   t.style.display = 'none';
   this.el_ = t;
-  this.img_ = timg;
-  this.id = "ent" + (++pxgame.Ent.id);
+  this.id = "ent" + (++pxgame.Ent.id_);
   return this;
 };
-pxgame.Ent.id = 0;
+pxgame.Ent.id_ = 0;
 
 /** Some Actor is an Ent which can move. */
 pxgame.Actor = Object.subclass(pxgame.Ent, function(img) {
@@ -60,6 +84,7 @@ pxgame.Actor = Object.subclass(pxgame.Ent, function(img) {
 
 /**
  * World creates a brand new world ("A whole new world")!
+ *
  * @constructor
  */
 pxgame.World = function(holder, width, height) {
@@ -84,27 +109,29 @@ pxgame.World = function(holder, width, height) {
   this.ents_ = {};
   this.moving_ = {};
 
-  var hover = document.createElement('li');
-  hover.classList.add('hover');
-  world.appendChild(hover);
-  hover.style.display = 'none';
-
-  world.addEventListener('mouseout', function(ev) {
+  // Highlight the currently focused hex.
+  (function() {
+    var hover = document.createElement('li');
+    hover.classList.add('hover');
+    world.appendChild(hover);
     hover.style.display = 'none';
-  });
 
-  world.addEventListener('mousemove', function(ev) {
-    var point = this.pointAt_(ev);
-    if (this.isValidPoint(point)) {
-      hover.style.display = '';
-      this.placeAtPoint_(hover, point, 10);
-    }
-  }.bind(this));
+    world.addEventListener('mouseout', function(ev) {
+      hover.style.display = 'none';
+    });
 
+    world.addEventListener('mousemove', function(ev) {
+      var point = this.pointAt_(ev);
+      if (this.isValidPoint(point)) {
+        hover.style.display = '';
+        this.placeAtPoint_(hover, point, 10);
+      }
+    }.bind(this));
+  }.apply(this));
+
+  // Pass tap/click back to the user.
   world.addEventListener('click', function(ev) {
-    if (this.onClick) {
-      this.onClick.bind(this)(this.pointAt_(ev));
-    }
+    this.onClick && this.onClick.call(this, this.pointAt_(ev));
   }.bind(this));
 
   // Game "loop": enact moves around the map.
