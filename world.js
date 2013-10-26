@@ -159,11 +159,20 @@ pxgame.World = function(holder, width, height) {
   return this;
 };
 
+/**
+ * Places the given Element in its rightful place within this World.
+ *
+ * @private
+ * @param {Element} el Element to style
+ * @param {Point} point Point to place at
+ * @param {number=} offset zIndex offset to apply (if any)
+ */
 pxgame.World.prototype.placeAtPoint_ = function(el, point, offset) {
-  el.style.left = (pxgame.const.GRID * point.x) + (point.y * (pxgame.const.GRID / 2)) + 'px';
-  el.style.top = (pxgame.const.GRID * point.y) + 'px';
-  el.style.display = '';
-  el.style.zIndex = 1000 + (point.y + (offset*100 || 0));
+  var s = el.style;
+  s.left = (pxgame.const.GRID * (point.x + point.y/2)) + 'px';
+  s.top = (pxgame.const.GRID * point.y) + 'px';
+  s.display = '';
+  s.zIndex = 1000 + (point.y + (offset*100 || 0));
 };
 
 /** Returns a list of points from (src,dst], or an empty array if not found. */
@@ -291,9 +300,7 @@ pxgame.World.prototype.randPoint = function(allow_used) {
 
   for (;;) {
     var y = Math.randInt(this.height);
-    var x = Math.randInt(this.width);
-    x -= Math.floor(y/2);  // offset so the world is 'even'
-
+    var x = Math.randInt(this.width) - Math.floor(y/2);
     var p = Point.make(x, y);
     if (allow_used || !this.at(p)) {
       return p;
@@ -317,8 +324,12 @@ pxgame.World.prototype.isValidPoint = function(point) {
 };
 
 /**
- * Returns the Ent at the given point, false for no object, or true for terrain
- * or out of bounds.
+ * Returns what is at the given Point. If there is a solid Env or this point
+ * is out of bounds, returns true; otherwise, returns the Ent here or false
+ * otherwise.
+ *
+ * @param {Point} at The position to check
+ * @return {boolean|Ent} What is at this point
  */
 pxgame.World.prototype.at = function(point) {
   var idx = this.idx_(point);
