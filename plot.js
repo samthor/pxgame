@@ -68,7 +68,15 @@ Plot.prototype.noise_ = function(canvas) {
   return canvas;
 };
 
-
+/**
+ * Draws lines between all set points onto the passed canvas. Lines are
+ * described as a mapping between size and the RGBA color drawn (e.g.,
+ * {32: "96, 0, 96, 0.2"}).
+ *
+ * @param {Canvas} canvas Canvas to draw on
+ * @param {Object} lines Lines to render
+ @ @param {number=} offset Vertical offset for line drawing, in pixels
+ */
 Plot.prototype.lines_ = function(canvas, lines, offset) {
   var ctx = canvas.getContext('2d');
 
@@ -179,6 +187,7 @@ WaterPlot.prototype.render = function() {
   this.blit_(canvas, '#006b9b');
 
   var mask = this.canvas_();
+  this.lines_(mask, {32: "49, 128, 56, 0.75"}, 1);
   this.lines_(mask, {26: "0, 64, 0, 0.25"});
   this.lines_(mask, {26: "142, 106, 66, 0.25"}, 2);
   this.lines_(mask, {22: "43, 141, 196, 0.8"}, 4);
