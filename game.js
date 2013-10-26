@@ -172,7 +172,7 @@ window.addEventListener('load', function() {
         world.moveTo(naked, world.randPoint());
         window.setTimeout(move, Math.randInt(4, 12) * 1000);
       };
-      move();
+      // move();
     })();
   }
 

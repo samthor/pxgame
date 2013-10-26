@@ -114,7 +114,7 @@ pxgame.World = function(holder, width, height) {
     var pointAt = function(ev) {
       var x = ev.x - world.offsetLeft;
       var y = ev.y - world.offsetTop;
-      return Point.atPos(x, y, pxgame.const.GRID);
+      return Point.make(x, y, pxgame.const.GRID);
     };
 
     var hover = document.createElement('li');
@@ -175,57 +175,6 @@ pxgame.World.prototype.placeAtPoint_ = function(el, point, offset) {
   s.zIndex = 1000 + (point.y + (offset*100 || 0));
 };
 
-/** Returns a list of points from (src,dst], or an empty array if not found. */
-pxgame.World.prototype.search_ = function(src, dst) {
-  var opts = [];
-  var seen = {};
-
-  if (this.at(dst) === true) {
-    console.debug('search_: can\'t find terrain or oob');
-    return [];
-  }
-
-  var insert = function(now) {
-    for (var i = 0; i < 6; ++i) {
-      var p = now.point.go(i);
-      var key = p.toString();
-      if (seen[key]) {
-        continue;
-      }
-      seen[key] = true;
-
-      if (dst.equals(p) || !this.at(p)) {
-        var metric = p.metric(dst);
-        var j = 0;
-        // TODO: Binary search for option insert.
-        while (j < opts.length && opts[j].metric < metric) {
-          ++j;
-        }
-        opts.splice(j, 0, {prev: now, metric: metric, point: p});
-      }
-    }
-  }.bind(this);
-
-  insert({point: src});
-  var num = 0;
-  while (num < 100 && opts.length > 0) {
-    var next = opts.shift();
-    num++;
-    if (next.point.equals(dst)) {
-      console.debug('search_: success with', num, 'steps');
-      var path = [];
-      while (!next.point.equals(src)) {
-        path.unshift(next.point);
-        next = next.prev;
-      }
-      return path;
-    }
-    insert(next);
-  }
-  console.debug('search_: failure with', num, 'steps');
-  return [];
-};
-
 pxgame.World.prototype.performMoveStep_ = function(actor, now, move) {
   var targetIsEnt = (move.target instanceof pxgame.Ent);
   var target = (targetIsEnt ? this.place(move.target) : move.target);
@@ -247,7 +196,7 @@ pxgame.World.prototype.performMoveStep_ = function(actor, now, move) {
 
   // If there's no path to the target, build it (using best-first).
   if (!move.path) {
-    move.path = this.search_(now, target);
+    move.path = now.search(target, this.at.bind(this));
     if (!move.path.length) {
       console.debug('performMoveStep_: can\'t find target');
       return false;  // give up
@@ -301,7 +250,7 @@ pxgame.World.prototype.randPoint = function(allow_used) {
   for (;;) {
     var y = Math.randInt(this.height);
     var x = Math.randInt(this.width) - Math.floor(y/2);
-    var p = Point.make(x, y);
+    var p = new Point(x, y);
     if (allow_used || !this.at(p)) {
       return p;
     }
