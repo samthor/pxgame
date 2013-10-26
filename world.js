@@ -109,8 +109,14 @@ pxgame.World = function(holder, width, height) {
   this.ents_ = {};
   this.moving_ = {};
 
-  // Highlight the currently focused hex.
+  // Highlight the currently focused hex, and manage mouse events.
   (function() {
+    var pointAt = function(ev) {
+      var x = ev.x - world.offsetLeft;
+      var y = ev.y - world.offsetTop;
+      return Point.atPos(x, y, pxgame.const.GRID);
+    };
+
     var hover = document.createElement('li');
     hover.classList.add('hover');
     world.appendChild(hover);
@@ -121,18 +127,18 @@ pxgame.World = function(holder, width, height) {
     });
 
     world.addEventListener('mousemove', function(ev) {
-      var point = this.pointAt_(ev);
+      var point = pointAt(ev);
       if (this.isValidPoint(point)) {
         hover.style.display = '';
         this.placeAtPoint_(hover, point, 10);
       }
     }.bind(this));
-  }.apply(this));
 
-  // Pass tap/click back to the user.
-  world.addEventListener('click', function(ev) {
-    this.onClick && this.onClick.call(this, this.pointAt_(ev));
-  }.bind(this));
+    world.addEventListener('click', function(ev) {
+      // Pass tap/click back to the user.
+      this.onClick && this.onClick.call(this, pointAt(ev));
+    }.bind(this));
+  }.apply(this));
 
   // Game "loop": enact moves around the map.
   window.setInterval(function() {
@@ -151,13 +157,6 @@ pxgame.World = function(holder, width, height) {
   }.bind(this), 1000 * pxgame.const.FRAME);
 
   return this;
-};
-
-pxgame.World.prototype.pointAt_ = function(ev) {
-  var world = this.el_;
-  var ty = Math.floor((ev.y - world.offsetTop) / pxgame.const.GRID);
-  var tx = Math.floor(((ev.x - ty*(pxgame.const.GRID/2)) - world.offsetLeft) / pxgame.const.GRID);
-  return Point.make(tx, ty);
 };
 
 pxgame.World.prototype.placeAtPoint_ = function(el, point, offset) {

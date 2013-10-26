@@ -72,6 +72,21 @@ Point.make = function(x, y) {
   return new Point(x, y);
 };
 
+/**
+ * Convenience constructor for Point based on a screen (pixel) location and
+ * grid size.
+ *
+ * @param {number} x Pixel x-position
+ * @param {number} y Pixel y-position
+ * @param {number} grid Grid size to use
+ * @return {Point} new Point at this position
+ */
+Point.atPos = function(x, y, grid) {
+  var px = Math.floor((x - y / 2) / grid);
+  var py = Math.floor(y / grid);
+  return new Point(px, py);
+};
+
 Point.prototype.equals = function(other) {
   return this.x == other.x && this.y == other.y;
 };
