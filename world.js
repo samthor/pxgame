@@ -168,11 +168,16 @@ pxgame.World = function(holder, width, height) {
  * @param {number=} offset zIndex offset to apply (if any)
  */
 pxgame.World.prototype.placeAtPoint_ = function(el, point, offset) {
-  var s = el.style;
-  s.left = (pxgame.const.GRID * (point.x + point.y/2)) + 'px';
-  s.top = (pxgame.const.GRID * point.y) + 'px';
-  s.display = '';
-  s.zIndex = 1000 + (point.y + (offset*100 || 0));
+  var style = el.style;
+  style.display = '';
+  style.zIndex = 1000 + (point.y + (offset*100 || 0));
+
+  // Apply the position as a CSS transform (not left/top, which causes layout).
+  var x = (pxgame.const.GRID * (point.x + point.y/2));
+  var y = (pxgame.const.GRID * point.y);
+  var transform = 'translate(' + x + 'px, ' + y + 'px)'
+  style.transform = transform;
+  style.webkitTransform = transform;
 };
 
 pxgame.World.prototype.performMoveStep_ = function(actor, now, move) {

@@ -33,7 +33,7 @@ div.world > li {
   height: 32px;
   z-index: 0;
   pointer-events: none;
-  -webkit-transition: opacity 0.1s ease-out;
+  transition: opacity 0.1s ease-out;
 }
 
 div.world > li img {
@@ -43,7 +43,8 @@ div.world > li img {
 }
 
 div.world > li.actor {
-  -webkit-transition: top 0.25s, left 0.25s;
+  /* TODO: Adding 'transform' here breaks '-webkit-transform'? */
+  transition: -webkit-transform 0.25s;
 }
 
 div.world > li.item img {
@@ -105,7 +106,7 @@ div.world > li.tree {
   height: 96px;
   opacity: 0.75;
   pointer-events: visible;  /* allows hover */
-  -webkit-transition: opacity 0.2s;
+  transition: opacity 0.2s;
 }
 div.world > li.tree:hover { opacity: 0.25; }
 div.world > li.tree1,
