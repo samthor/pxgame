@@ -321,7 +321,7 @@ pxgame.World.prototype.addEnv = function(env, point) {
 
   // Add the element to the map.
   this.el_.appendChild(el);
-  this.placeAtPoint_(el, point, env.flag(pxgame.Env.LARGE) || -1);
+  this.placeAtPoint_(el, point, env.flag(pxgame.Env.LARGE) ? 0 : -1);
 }
 
 pxgame.World.prototype.place = function(e, point) {
