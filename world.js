@@ -53,7 +53,8 @@ pxgame.Env.prototype.draw = function() {
 
 /**
  * Some Ent represents an object on the world. Each instantiation is a unique
- * object that might be interacted with.
+ * object that might be interacted with. An Ent has no direct knowledge of
+ * where it is positioned on a World.
  *
  * Ent should typically be subclassed, and is subclassed for free in Actor.
  *
