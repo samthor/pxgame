@@ -29,6 +29,9 @@ String.prototype.startsWith = function(prefix) {
  * may be done like; Child.super.call(this, ...)
  */
 Object.subclass = function(parent, child) {
+  child = child || function() {
+    return parent.apply(this, arguments);
+  };
   child.super = parent;
   child.prototype = Object.create(parent.prototype);
   child.prototype.constructor = parent;

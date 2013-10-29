@@ -36,11 +36,11 @@ var buildWorld = function(width, height) {
   var ww = new pxgame.World(document.body, width, height);
 
   var env = {
-    'grass': new pxgame.Env(0, 'grass', 5),
-    'rock': new pxgame.Env(0, 'rock', 2),
-    'wood': new pxgame.Env(0, 'wood', 2),
-    'tree': new pxgame.Env(pxgame.Env.LARGE, 'tree', 5),
-    'water': new pxgame.Env(0, 'water', 2),
+    'grass': new pxgame.Env('grass', 5),
+    'rock': new pxgame.Env('rock', 2),
+    'wood': new pxgame.Env('wood', 2),
+    'tree': new pxgame.LargeEnv('tree', 5),
+    'water': new pxgame.Env('water', 2),
   };
   var addEnv = function(id, count) {
     for (var i = 0; i < count; ++i) {

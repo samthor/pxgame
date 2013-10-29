@@ -11,29 +11,23 @@ var pxgame = {const:{GRID: 32, FRAME: 0.2}};
  * Typically this should not be subclassed.
  *
  * @constructor
- * @param {number} flags Flags to set, e.g., SOLID and LARGE
  * @param {String} type CSS class to use/set on the later generated HTML
  * @param {random=} random Random range in [0,random] to apply as part of
  *    the added CSS class
  */
-pxgame.Env = function(flags, type, random) {
+pxgame.Env = function(type, random) {
   this.id = "env" + (++pxgame.Ent.id_);
   this.type_ = type;
   this.random_ = random;
-  this.flags_ = flags;
   return this;
 };
 pxgame.Env.id_ = 0;
-pxgame.Env.LARGE = 1;
 
 /**
- * Does this Env have the given flag set?
- *
- * @param {number} flag Flag to check for
- * @return {boolean} Whether the flag is set
+ * @return {boolean} is this Env large
  */
-pxgame.Env.prototype.flag = function(flag) {
-  return this.flags_ & flag;
+pxgame.Env.prototype.isLarge = function() {
+  return (this instanceof pxgame.LargeEnv);
 }
 
 /**
@@ -50,6 +44,9 @@ pxgame.Env.prototype.draw = function() {
   }
   return t;
 };
+
+/** Large version of Env. */
+pxgame.LargeEnv = Object.subclass(pxgame.Env);
 
 /**
  * Some Ent represents an object on the world. Each instantiation is a unique
@@ -78,8 +75,7 @@ pxgame.Ent.id_ = 0;
 
 /** Some Actor is an Ent which can move. */
 pxgame.Actor = Object.subclass(pxgame.Ent, function(img) {
-  pxgame.Actor.super.call(this, img, 'actor');
-  return this;
+  return pxgame.Actor.super.call(this, img, 'actor');
 });
 
 /**
@@ -322,7 +318,7 @@ pxgame.World.prototype.addEnv = function(env, point) {
 
   // Add the element to the map.
   this.el_.appendChild(el);
-  this.placeAtPoint_(el, point, env.flag(pxgame.Env.LARGE) ? 0 : -1);
+  this.placeAtPoint_(el, point, -1 * !env.isLarge());
 }
 
 pxgame.World.prototype.place = function(e, point) {
