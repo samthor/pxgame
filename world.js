@@ -24,8 +24,7 @@ pxgame.Env = function(flags, type, random) {
   return this;
 };
 pxgame.Env.id_ = 0;
-pxgame.Env.SOLID = 1;
-pxgame.Env.LARGE = 2;
+pxgame.Env.LARGE = 1;
 
 /**
  * Does this Env have the given flag set?
@@ -105,7 +104,6 @@ pxgame.World = function(holder, width, height) {
   this.height = height;
   this.el_ = world;
   this.map_ = new Array(width * height);
-  this.envmap_ = new Array(width * height);
   this.ents_ = {};
   this.moving_ = {};
 
@@ -146,12 +144,7 @@ pxgame.World = function(holder, width, height) {
       var desc = this.moving_[k];
       var ret = this.performMoveStep_(desc.ent, desc.point, desc.move);
       if (ret != undefined) {
-        var callback = desc.move.callback;
-        delete this.moving_[k];
-        delete desc.move;
-        if (callback) {
-          window.setTimeout(callback.bind(this, ret), 0);
-        }
+        this.moveDone_(desc.ent, ret);
       }
     }
   }.bind(this), 1000 * pxgame.const.FRAME);
@@ -229,24 +222,44 @@ pxgame.World.prototype.performMoveStep_ = function(actor, now, move) {
 
 pxgame.World.prototype.moveTo = function(actor, target, callback) {
   var desc = this.ents_[actor.id];
-  Object.assert(desc, "Actor must be in world");
+  Object.assert(desc && desc.ent == actor, "Actor must be in world");
+  Object.assert(actor instanceof pxgame.Actor, "only Actor may move");
+  this.moveDone_(actor);
 
-  // If the point actually contains an Ent, then use that as the target.
+  // If the point actually contains an Ent, then use that as the target. If it
+  // is otherwise occupied (e.g., by some Env) then this is an invalid move.
   if (target instanceof Point) {
     var at = this.at(target);
     if (at instanceof pxgame.Ent) {
       target = at;
+    } else if (at) {
+      callback && callback();
+      return false;
     }
-  }
-
-  // If there was a previous move callback invoke it early.
-  if (desc.move && desc.move.callback) {
-    desc.move.callback();
   }
 
   // Configure the new move spec inside ent description.
   desc.move = {target: target, callback: callback};
   this.moving_[actor.id] = desc;
+};
+
+/**
+ * Indicate that this Actor has finished moving.
+ *
+ * @private
+ * @param {pxgame.Actor} actor Actor that is done moving
+ * @param {boolean=} ret True to indicate successful move
+ */
+pxgame.World.prototype.moveDone_ = function(actor, ret) {
+  var desc = this.moving_[actor.id];
+  if (desc && desc.move) {
+    var callback = desc.move.callback;
+
+    delete desc.move;
+    delete this.moving_[desc.ent.id];
+
+    callback && window.setTimeout(callback.bind(this, ret), 0);
+  }
 };
 
 pxgame.World.prototype.randPoint = function(allow_used) {
@@ -294,44 +307,21 @@ pxgame.World.prototype.at = function(point) {
 };
 
 pxgame.World.prototype.addEnv = function(env, point) {
-  if (arguments.length == 1) {
-    // Find a free point that doesn't already have Env.
-    for (;;) {
-      point = this.randPoint();
-      var idx = this.idx_(point);
-      if (!this.envmap_[idx]) {
-        break;
-      }
-    }
-  }
+  point = point || this.randPoint();
   Object.assert(env instanceof pxgame.Env, "addEnv only works with Env");
   Object.assert(this.isValidPoint(point), "must addEnv at valid point");
+
   var idx = this.idx_(point);
+  Object.assert(!this.map_[idx], "can't replace from map");
 
   // Possibly draw this on a canvas, or retrieve an element (or both?).
   var el = env.draw();
+  Object.assert(el, "Env must be able to draw itself");
+  this.map_[idx] = el;
 
-  // If this is solid, then mark it on the actual map.
-  if (env.flag(pxgame.Env.SOLID)) {
-    Object.assert(!this.map_[idx], "can't replace Ent from map");
-    this.map_[idx] = true;
-  }
-
-  // Add the optional element to the map.
-  var zoffset = 0;
-  if (!env.flag(pxgame.Env.LARGE)) {
-    --zoffset;
-  }
+  // Add the element to the map.
   this.el_.appendChild(el);
-  this.placeAtPoint_(el, point, zoffset);
-
-  // Place the drawn environment into |envmap_|, removing any environment
-  // already there (i.e., non-solid environment).
-  var prev = this.envmap_[idx];
-  if (prev && prev !== true) {
-    this.el_.removeChild(prev);
-  }
-  this.envmap_[idx] = el || true;
+  this.placeAtPoint_(el, point, env.flag(pxgame.Env.LARGE) || -1);
 }
 
 pxgame.World.prototype.place = function(e, point) {
@@ -366,11 +356,11 @@ pxgame.World.prototype.place = function(e, point) {
 
 pxgame.World.prototype.remove = function(e) {
   var desc = this.ents_[e.id];
-  Object.assert(desc, "Actor must be in world");
-
-  if (desc.move && desc.move.callback) {
-    desc.move.callback();
+  Object.assert(desc, "Ent must be in world");
+  if (e instanceof pxgame.Actor) {
+    this.moveDone_(actor);
   }
+
   var point = desc.point;
   var idx = this.idx_(point);
   delete this.ents_[e.id];

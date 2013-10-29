@@ -37,10 +37,10 @@ var buildWorld = function(width, height) {
 
   var env = {
     'grass': new pxgame.Env(0, 'grass', 5),
-    'rock': new pxgame.Env(pxgame.Env.SOLID, 'rock', 2),
-    'wood': new pxgame.Env(pxgame.Env.SOLID, 'wood', 2),
-    'tree': new pxgame.Env(pxgame.Env.SOLID | pxgame.Env.LARGE, 'tree', 5),
-    'water': new pxgame.Env(pxgame.Env.SOLID, 'water', 2),
+    'rock': new pxgame.Env(0, 'rock', 2),
+    'wood': new pxgame.Env(0, 'wood', 2),
+    'tree': new pxgame.Env(pxgame.Env.LARGE, 'tree', 5),
+    'water': new pxgame.Env(0, 'water', 2),
   };
   var addEnv = function(id, count) {
     for (var i = 0; i < count; ++i) {
