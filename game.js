@@ -104,10 +104,9 @@ InventoryManager.prototype.gain = function(inv) {
   Object.assert(inv instanceof InvEnt, "manager only takes InvEnt instances");
   this.items_[inv.id] = inv;
 
-  var img = document.createElement('img');
+  var img = Image.load('res/icons/' + inv.icon + '.png');
   img.inv_src_ = inv;
   img.classList.add('item');
-  img.src = 'res/icons/' + inv.icon + '.png';
   img.title = inv.title;
   img.draggable = true;  // default, but just for sanity
 
