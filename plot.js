@@ -3,7 +3,7 @@
  *
  */
 var Plot = function(world) {
-  Object.assert(world instanceof World, "Plot is based on world");
+  Object.assert(world instanceof pxgame.World, "Plot is based on world");
   this.w_ = world;  // store world for later
   this.width = world.width;
   this.height = world.height;
@@ -15,8 +15,8 @@ Plot.id = 0;
 
 Plot.prototype.canvas_ = function() {
   var canvas = document.createElement('canvas');
-  canvas.width = ((this.width + 0.5) * World.GRID);
-  canvas.height = (this.height * World.GRID);
+  canvas.width = ((this.width + 0.5) * pxgame.const.GRID);
+  canvas.height = (this.height * pxgame.const.GRID);
   return canvas;
 }
 
@@ -38,8 +38,8 @@ Plot.prototype.noise_ = function(canvas) {
   this.forEach_(function(point) {
     // draw some noise!
     ctx.save();
-    ctx.translate((World.GRID * point.x) + (point.y * (World.GRID / 2)), World.GRID * point.y);
-    var radius = World.GRID / 2;
+    ctx.translate((pxgame.const.GRID * point.x) + (point.y * (pxgame.const.GRID / 2)), pxgame.const.GRID * point.y);
+    var radius = pxgame.const.GRID / 2;
     ctx.translate(radius, radius);
 
     for (var j = 0; j < 96; ++j) {
@@ -90,8 +90,8 @@ Plot.prototype.lines_ = function(canvas, lines, offset) {
       if (!this.get(cand)) {
         continue;
       }
-      var mX = (World.GRID * cand.x) + (cand.y * (World.GRID / 2));
-      var mY = World.GRID * cand.y;
+      var mX = (pxgame.const.GRID * cand.x) + (cand.y * (pxgame.const.GRID / 2));
+      var mY = pxgame.const.GRID * cand.y;
 
       for (var i = 0; i < 6; ++i) {
         var cand2 = cand.go(i);
@@ -100,8 +100,8 @@ Plot.prototype.lines_ = function(canvas, lines, offset) {
         }
 
         ctx.beginPath();
-        ctx.moveTo((World.GRID * point.x) + (point.y * (World.GRID / 2)), World.GRID * point.y);
-        ctx.quadraticCurveTo(mX, mY, (World.GRID * cand2.x) + (cand2.y * (World.GRID / 2)), World.GRID * cand2.y);
+        ctx.moveTo((pxgame.const.GRID * point.x) + (point.y * (pxgame.const.GRID / 2)), pxgame.const.GRID * point.y);
+        ctx.quadraticCurveTo(mX, mY, (pxgame.const.GRID * cand2.x) + (cand2.y * (pxgame.const.GRID / 2)), pxgame.const.GRID * cand2.y);
 
         for (var width in lines) {
           ctx.lineWidth = width;
@@ -126,15 +126,15 @@ Plot.prototype.blit_ = function(canvas, desc) {
     return;
   }
 
-  Object.assert(desc.width == World.GRID);
-  Object.assert(desc.height == World.GRID);
+  Object.assert(desc.width == pxgame.const.GRID);
+  Object.assert(desc.height == pxgame.const.GRID);
 
   for (var jx = -1; jx <= this.width; ++jx) {
     for (var y = 0; y < this.height; ++y) {
       var x = jx - Math.floor(y / 2);
       var point = Point.make(x, y);
       ctx.save();
-      ctx.translate((World.GRID * x) + (y * (World.GRID / 2)), World.GRID * y);
+      ctx.translate((pxgame.const.GRID * x) + (y * (pxgame.const.GRID / 2)), pxgame.const.GRID * y);
       ctx.drawImage(desc, 0, 0);
       ctx.restore();
     }
