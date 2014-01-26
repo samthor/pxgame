@@ -42,7 +42,8 @@ Plot.prototype.noise_ = function(canvas) {
     var radius = pxgame.const.GRID / 2;
     ctx.translate(radius, radius);
 
-    for (var j = 0; j < 96; ++j) {
+    // draw n random circles nearby?
+    for (var j = 0; j < 32; ++j) {
       var x = Math.randInt(-radius, radius);
       var y = Math.randInt(-radius, radius);
 
@@ -52,8 +53,6 @@ Plot.prototype.noise_ = function(canvas) {
       ctx.save();
       ctx.fillStyle = 'rgba(255, 255, 255, ' + weight + ')';
       ctx.translate(x, y);
-
-      ctx.scale(Math.random() + 0.25, Math.random() + 0.25);
 
       ctx.beginPath();
       ctx.arc(0, 0, size, 0, Math.PI*2, true); 

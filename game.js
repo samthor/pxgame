@@ -47,7 +47,7 @@ var buildWorld = function(width, height) {
       ww.addEnv(env[id]);
     }
   };
-  /*
+
   var dirt = new DirtPlot(ww, canvasFromImageIndex('res-dirt', 10));
   var p = ww.randPoint();
   for (var i = 0; i < 80; ++i) {
@@ -78,7 +78,7 @@ var buildWorld = function(width, height) {
     }
   }
   ww.el_.appendChild(water.render());
-*/
+
   addEnv('rock', 20);
   addEnv('wood', 5);
   addEnv('tree', 15);
