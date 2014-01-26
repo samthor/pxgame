@@ -80,6 +80,10 @@ var Point = function(x, y) {
  * @return {Point} new Point at this position
  */
 Point.make = function(x, y, grid) {
+  if (!grid) {
+    // fallback behavior for idiots like me
+    return new Point(x, y);
+  }
   var px = Math.floor((x - y / 2) / grid);
   var py = Math.floor(y / grid);
   return new Point(px, py);
