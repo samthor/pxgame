@@ -8,10 +8,14 @@ var Plot = function(world) {
   this.width = world.width;
   this.height = world.height;
   this.id = 'plot' + (++Plot.id);
-  this.plot_ = new Array(this.width * this.height);  // TODO: use bitarray
+
+  var size = Math.ceil(this.width * this.height / Plot.BITSIZE);
+  this.plot_ = new Uint32Array(size);
+
   return this;
 }
 Plot.id = 0;
+Plot.BITSIZE = 32;
 
 Plot.prototype.canvas_ = function() {
   var canvas = document.createElement('canvas');
@@ -145,13 +149,13 @@ Plot.prototype.set = function(point, size) {
   if (size <= 0) {
     return false;
   }
-  var idx = this.w_.idx_(point);
-  if (idx == -1) {
+
+  var r_idx = this.w_.idx_(point);
+  if (r_idx == -1) {
     return false;
   }
-  if (this.plot_[idx]) {
-    return true;  // already set
-  }
+  var idx = Math.floor(r_idx / Plot.BITSIZE);
+  var off = r_idx % Plot.BITSIZE;
 
   if (--size >= 1) {
     for (var j = 0; j < 6; ++j) {
@@ -159,16 +163,20 @@ Plot.prototype.set = function(point, size) {
       this.set(cand, size);
     }
   }
-  this.plot_[idx] = true;
+  this.plot_[idx] |= (1 << off);
   return true;
 };
 
 Plot.prototype.get = function(point) {
-  var idx = this.w_.idx_(point);
-  if (idx == -1) {
-    return true;
+  var r_idx = this.w_.idx_(point);
+  if (r_idx == -1) {
+    return false;
   }
-  return this.plot_[idx];
+  var idx = Math.floor(r_idx / Plot.BITSIZE);
+  var off = r_idx % Plot.BITSIZE;
+
+  var v = this.plot_[idx] & (1 << off);
+  return v != 0;
 };
 
 Plot.prototype.render = function() {
