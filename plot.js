@@ -6,11 +6,7 @@ var Plot = function(size, solid) {
   this.size = size;
   this.id = 'plot' + (++Plot.id);
   this.solid = solid || false;
-
-  this.bitsize_ = Uint32Array.BYTES_PER_ELEMENT * 8;
-  var ints = Math.ceil(this.size.length / this.bitsize_);
-  this.plot_ = new Uint32Array(ints);
-
+  this.board_ = new Board(size);
   return this;
 }
 Plot.id = 0;
@@ -131,35 +127,17 @@ Plot.prototype.set = function(point, dimen) {
   dimen = dimen || 1;
   if (dimen <= 0) {
     return false;
-  }
-
-  var r_idx = this.size.index(point);
-  if (r_idx == -1) {
-    return false;
-  }
-  var idx = Math.floor(r_idx / this.bitsize_);
-  var off = r_idx % this.bitsize_;
-
-  if (--dimen >= 1) {
+  } else if (--dimen >= 1) {
     for (var j = 0; j < 6; ++j) {
       var cand = point.go(j);
       this.set(cand, dimen);
     }
   }
-  this.plot_[idx] |= (1 << off);
-  return true;
+  return this.board_.access(point, true);
 };
 
 Plot.prototype.get = function(point) {
-  var r_idx = this.size.index(point);
-  if (r_idx == -1) {
-    return true;  // for plots, out of bounds is true
-  }
-  var idx = Math.floor(r_idx / this.bitsize_);
-  var off = r_idx % this.bitsize_;
-
-  var v = this.plot_[idx] & (1 << off);
-  return v != 0;
+  return this.board_.access(point);
 };
 
 Plot.prototype.render = function() {

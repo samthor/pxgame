@@ -14,6 +14,14 @@ Math.randInt = function(range, range_max) {
 };
 
 /**
+ * Returns the log2 of the passed number.
+ */
+Math.log2 = function(value) {
+  return Math.log(value) / Math.log2.LN2;
+};
+Math.log2.LN2 = Math.log(2);
+
+/**
  * Does this string start with the given prefix?
  *
  * @param {String} prefix Prefix to check
@@ -114,7 +122,6 @@ Size.prototype.rand = function() {
  * @return {number} index of Point, -1 for invalid
  */
 Size.prototype.index = function(point) {
-  Object.assert(point != null, "Point must exist");
   if (point.y < 0 || point.y >= this.height) {
     return -1;
   }
@@ -146,6 +153,55 @@ Size.prototype.forEach = function(fn) {
       fn(new Point(x, y));
     }
   }
+};
+
+/**
+ * Each Board represents generic storage for some Size.
+ *
+ * @constructor
+ * @param {Size} size of board
+ */
+var Board = function(size) {
+  this.size = size;
+
+  var size = Math.ceil(size.length / Board.BITSIZE);
+  this.bitset_ = new Board.BITSET(size);
+  this.board_ = new Array(size.length);
+};
+Board.BITSET = Uint32Array;
+Board.BITSIZE = Board.BITSET.BYTES_PER_ELEMENT * 8;
+Board.BITSHIFT = Math.floor(Math.log2(Board.BITSIZE));
+
+/**
+ * Access some position on this Board (get/set).
+ *
+ */
+Board.prototype.access = function(point, value) {
+  var i = this.size.index(point);
+  if (i == -1) {
+    return true;
+  }
+
+  var bindex = (i >> Board.BITSHIFT);
+  var boffset = 1 << (i % Board.BITSIZE);
+  var curr = this.bitset_[bindex] & boffset;
+
+  if (value === undefined) {
+    // get only, return current bitset
+    return curr;
+  }
+
+  var truthy = !!value;
+  if (curr != truthy) {
+    if (truthy) {
+      // transition to true
+      this.bitset_[bindex] |= boffset;
+    } else {
+      // transition to false (lazy way)
+      this.bitset_[bindex] -= boffset;
+    }
+  }
+  return truthy;
 };
 
 /**
