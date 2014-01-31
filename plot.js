@@ -2,40 +2,31 @@
 /**
  *
  */
-var Plot = function(world, solid) {
-  Object.assert(world instanceof pxgame.World, "Plot is based on world");
-  this.w_ = world;  // store world for later
-  this.width = world.width;
-  this.height = world.height;
+var Plot = function(size, solid) {
+  this.size = size;
   this.id = 'plot' + (++Plot.id);
   this.solid = solid || false;
 
-  var size = Math.ceil(this.width * this.height / Plot.BITSIZE);
-  this.plot_ = new Uint32Array(size);
+  this.bitsize_ = Uint32Array.BYTES_PER_ELEMENT * 8;
+  var ints = Math.ceil(this.size.length / this.bitsize_);
+  this.plot_ = new Uint32Array(ints);
 
   return this;
 }
 Plot.id = 0;
-Plot.BITSIZE = 32;
+
+Plot.prototype.forEach_ = function(fn) {
+  this.size.forEach(function(point) {
+    if (this.get(point)) {
+      fn.call(this, point);
+    }
+  }.bind(this));
+};
 
 Plot.prototype.canvas_ = function() {
   var canvas = document.createElement('canvas');
-  canvas.width = ((this.width + 0.5) * pxgame.const.GRID);
-  canvas.height = (this.height * pxgame.const.GRID);
+  this.size.apply(pxgame.const.GRID, canvas);
   return canvas;
-}
-
-Plot.prototype.forEach_ = function(fn) {
-  for (var jx = 0; jx < this.width; ++jx) {
-    for (var y = 0; y < this.height; ++y) {
-      var x = jx - Math.floor(y / 2);
-      var point = Point.make(x, y);
-      if (!this.get(point)) {
-        continue;
-      }
-      fn.bind(this)(point);
-    }
-  }
 };
 
 Plot.prototype.noise_ = function(canvas) {
@@ -124,44 +115,35 @@ Plot.prototype.blit_ = function(canvas, desc) {
   var ctx = canvas.getContext('2d');
   ctx.globalCompositeOperation = 'source-atop';
 
-  if (desc.substring) {  // check for string
+  if (desc.substring) {
+    // string fillStyle, such as a color
     ctx.fillStyle = desc;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    return;
+  } else {
+    // treat non-string as a patternable image
+    var pattern = ctx.createPattern(desc, 'repeat');
+    ctx.fillStyle = pattern;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
-
-  Object.assert(desc.width == pxgame.const.GRID);
-  Object.assert(desc.height == pxgame.const.GRID);
-
-  for (var jx = -1; jx <= this.width; ++jx) {
-    for (var y = 0; y < this.height; ++y) {
-      var x = jx - Math.floor(y / 2);
-      var point = Point.make(x, y);
-      ctx.save();
-      ctx.translate((pxgame.const.GRID * x) + (y * (pxgame.const.GRID / 2)), pxgame.const.GRID * y);
-      ctx.drawImage(desc, 0, 0);
-      ctx.restore();
-    }
-  }  
 };
 
-Plot.prototype.set = function(point, size) {
-  size = size || 1;
-  if (size <= 0) {
+Plot.prototype.set = function(point, dimen) {
+  dimen = dimen || 1;
+  if (dimen <= 0) {
     return false;
   }
 
-  var r_idx = this.w_.idx_(point);
+  var r_idx = this.size.index(point);
   if (r_idx == -1) {
     return false;
   }
-  var idx = Math.floor(r_idx / Plot.BITSIZE);
-  var off = r_idx % Plot.BITSIZE;
+  var idx = Math.floor(r_idx / this.bitsize_);
+  var off = r_idx % this.bitsize_;
 
-  if (--size >= 1) {
+  if (--dimen >= 1) {
     for (var j = 0; j < 6; ++j) {
       var cand = point.go(j);
-      this.set(cand, size);
+      this.set(cand, dimen);
     }
   }
   this.plot_[idx] |= (1 << off);
@@ -169,12 +151,12 @@ Plot.prototype.set = function(point, size) {
 };
 
 Plot.prototype.get = function(point) {
-  var r_idx = this.w_.idx_(point);
+  var r_idx = this.size.index(point);
   if (r_idx == -1) {
-    return false;
+    return true;  // for plots, out of bounds is true
   }
-  var idx = Math.floor(r_idx / Plot.BITSIZE);
-  var off = r_idx % Plot.BITSIZE;
+  var idx = Math.floor(r_idx / this.bitsize_);
+  var off = r_idx % this.bitsize_;
 
   var v = this.plot_[idx] & (1 << off);
   return v != 0;

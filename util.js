@@ -60,8 +60,101 @@ Image.load = function(src) {
 };
 
 /**
- * Each point represents an x,y tuple in a hex-based world.
+ * Size represents an immutable 2D-ish map containing hexes (each of Point). It
+ * does not contain data itself, just providing helper methods to do with the
+ * grid it describes.
+ *
+ * @constructor
+ */
+var Size = function(width, height) {
+  Object.assert(width > 0, "Width must be >0");
+  Object.assert(Math.floor(width) == width, "Width must be integer");
+  Object.assert(height > 0, "Height must be >0");
+  Object.assert(Math.floor(height) == height, "Width must be integer");
+  this.width = width;
+  this.height = height;
+  this.length = width * height;
+  return this;
+};
+
+/**
+ * Style a given HTMLElement or CSSStyleDeclaration to contain this Size.
+ *
+ * @param {number} grid size
+ * @param {Object} object to style
+ */
+Size.prototype.apply = function(grid, object) {
+  var width = ((this.width + 0.5) * grid);
+  var height = (this.height * grid);
+
+  if (object instanceof CSSStyleDeclaration) {
+    object.width = width + 'px';
+    object.height = height + 'px';
+  } else {
+    // probably a HTMLElement
+    object.width = width;
+    object.height = height;
+  }
+};
+
+/**
+ * Returns a random Point within this Size.
+ *
+ * @return {Point} random point
+ */
+Size.prototype.rand = function() {
+  var y = Math.randInt(this.height);
+  var x = Math.randInt(this.width) - Math.floor(y/2);
+  return new Point(x, y);
+};
+
+/**
+ * Provides the index within a buffer for a given Point.
+ *
+ * @return {number} index of Point, -1 for invalid
+ */
+Size.prototype.index = function(point) {
+  Object.assert(point != null, "Point must exist");
+  if (point.y < 0 || point.y >= this.height) {
+    return -1;
+  }
+  var y_2 = Math.floor(point.y/2);
+  if (point.x < -y_2 || point.x >= this.width - y_2) {
+    return -1;
+  }
+  return (point.y * this.width) + ((point.x + this.width) % this.width);
+};
+
+/**
+ * Is the given Point valid inside this Size?
+ *
+ * @return {boolean} whether the Point is valid
+ */
+Size.prototype.valid = function(point) {
+  return this.index(point) != -1;
+};
+
+/**
+ * Calls the passed Function for each Point in this Size.
+ *
+ * @param {Function} fn to call
+ */
+Size.prototype.forEach = function(fn) {
+  for (var jx = 0; jx < this.width; ++jx) {
+    for (var y = 0; y < this.height; ++y) {
+      var x = jx - Math.floor(y / 2);
+      fn(new Point(x, y));
+    }
+  }
+};
+
+/**
+ * Each Point represents an immutable x,y tuple in a hex-based world.
  * See: http://keekerdc.com/2011/03/hexagon-grids-coordinate-systems-and-distance-calculations/
+ *
+ * @constructor
+ * @param {number} x position
+ * @param {number} y position
  */
 var Point = function(x, y) {
   this.x = x;

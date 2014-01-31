@@ -83,24 +83,16 @@ pxgame.Actor = Object.subclass(pxgame.Ent, function(img) {
  *
  * @constructor
  */
-pxgame.World = function(holder, width, height) {
-  width = Math.floor(width);
-  height = Math.floor(height);
+pxgame.World = function(holder, size) {
+  this.size = size;
+
   var world = document.createElement('div');
   world.classList.add('world');
-  world.style.width = ((width + 0.5) * pxgame.const.GRID) + 'px';
-  world.style.height = (height * pxgame.const.GRID) + 'px';
+  this.size.apply(pxgame.const.GRID, world.style);
   holder.appendChild(world);
 
-  // Grid, for debugging tiles.
-  var grid = document.createElement('div');
-  grid.classList.add('grid');
-  // world.appendChild(grid);
-
-  this.width = width;
-  this.height = height;
   this.el_ = world;
-  this.map_ = new Array(width * height);
+  this.map_ = new Array(this.size.length);
   this.ents_ = {};
   this.moving_ = {};
 
@@ -125,7 +117,7 @@ pxgame.World = function(holder, width, height) {
 
     world.addEventListener('mousemove', function(ev) {
       var point = pointAt(ev);
-      if (this.isValidPoint(point)) {
+      if (this.size.valid(point)) {
         hover.style.display = '';
         this.placeAtPoint_(hover, point, 10);
       }
@@ -262,31 +254,12 @@ pxgame.World.prototype.moveDone_ = function(actor, ret) {
 };
 
 pxgame.World.prototype.randPoint = function(allow_used) {
-  allow_used = allow_used || false;
-
   for (;;) {
-    var y = Math.randInt(this.height);
-    var x = Math.randInt(this.width) - Math.floor(y/2);
-    var p = new Point(x, y);
+    var p = this.size.rand();
     if (allow_used || !this.at(p)) {
       return p;
     }
   }
-};
-
-pxgame.World.prototype.idx_ = function(point) {
-  if (point.y < 0 || point.y >= this.height) {
-    return -1;
-  }
-  var y_2 = Math.floor(point.y/2);
-  if (point.x < -y_2 || point.x >= this.width - y_2) {
-    return -1;
-  }
-  return (point.y * this.width) + ((point.x + this.width) % this.width);
-};
-
-pxgame.World.prototype.isValidPoint = function(point) {
-  return this.idx_(point) != -1;
 };
 
 /**
@@ -298,7 +271,7 @@ pxgame.World.prototype.isValidPoint = function(point) {
  * @return {boolean|Ent} What is at this point
  */
 pxgame.World.prototype.at = function(point) {
-  var idx = this.idx_(point);
+  var idx = this.size.index(point);
   if (idx != -1) {
     var v = this.map_[idx];
     if (!v) {
@@ -316,9 +289,9 @@ pxgame.World.prototype.at = function(point) {
 pxgame.World.prototype.addEnv = function(env, point) {
   point = point || this.randPoint();
   Object.assert(env instanceof pxgame.Env, "addEnv only works with Env");
-  Object.assert(this.isValidPoint(point), "must addEnv at valid point");
+  Object.assert(this.size.valid(point), "must addEnv at valid point");
 
-  var idx = this.idx_(point);
+  var idx = this.size.index(point);
   Object.assert(!this.map_[idx], "can't replace from map");
 
   // Possibly draw this on a canvas, or retrieve an element (or both?).
@@ -337,7 +310,7 @@ pxgame.World.prototype.place = function(e, point) {
     return prev.point;
   }
   Object.assert(e instanceof pxgame.Ent, "place takes Ent only");
-  Object.assert(this.isValidPoint(point), "must place at valid point");
+  Object.assert(this.size.valid(point), "must place at valid point");
 
   // Add to this world if not already there.
   if (e.world != this) {
@@ -347,12 +320,12 @@ pxgame.World.prototype.place = function(e, point) {
     this.ents_[e.id] = {ent: e};
   } else {
     // Delete this Ent from its previous location if there.
-    delete this.map_[this.idx_(prev.point)];
+    delete this.map_[this.size.index(prev.point)];
   }
 
   // Remove anything already at this position (perhaps we should be less
   // aggressive about this).
-  var idx = this.idx_(point);
+  var idx = this.size.index(point);
   Object.assert(!this.map_[idx], "place can't overwrite another Ent");
 
   // Place this Ent on the world, both conceptually and 'physically'.
@@ -380,7 +353,7 @@ pxgame.World.prototype.remove = function(e) {
   }
 
   var point = desc.point;
-  var idx = this.idx_(point);
+  var idx = this.size.index(point);
   delete this.ents_[e.id];
   delete this.map_[idx];
 

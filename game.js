@@ -32,9 +32,33 @@ var canvasFromImageIndex = function(icon, index) {
   return canvas;
 };
 
-var buildWorld = function(width, height) {
-  var ww = new pxgame.World(document.body, width, height);
+var buildWorld = function(size) {
+  var ww = new pxgame.World(document.body, size);
 
+  var randWalk = function(plot) {
+    var p = ww.size.rand();
+    for (var i = 0; i < 80; ++i) {
+      var dir = Math.randInt(6);
+      var distance = Math.randInt(1, 4);
+      while (--distance) {
+        var cand = p.go(dir);
+        if (!plot.set(cand)) {
+          break;
+        }
+        p = cand;
+      }
+    }
+  };
+
+  var dirt = new DirtPlot(ww.size, canvasFromImageIndex('res-dirt', 10));
+  randWalk(dirt);
+  ww.addPlot(dirt);
+
+  var water = new WaterPlot(ww.size);
+  randWalk(water);
+  ww.addPlot(water);
+
+  // Add environment.
   var env = {
     'grass': new pxgame.Env('grass', 5),
     'rock': new pxgame.Env('rock', 2),
@@ -47,38 +71,6 @@ var buildWorld = function(width, height) {
       ww.addEnv(env[id]);
     }
   };
-
-  var dirt = new DirtPlot(ww, canvasFromImageIndex('res-dirt', 10));
-  var p = ww.randPoint();
-  for (var i = 0; i < 80; ++i) {
-    var dir = Math.randInt(6);
-    var distance = Math.randInt(1, 4);
-    while (--distance) {
-      var cand = p.go(dir);
-      if (!dirt.set(cand)) {
-        break;
-      }
-      p = cand;
-    }
-  }
-  ww.addPlot(dirt);
-
-  // Draw a semi-random path of plot (dirt for now).
-  var water = new WaterPlot(ww);
-  var p = ww.randPoint();
-  for (var i = 0; i < 80; ++i) {
-    var dir = Math.randInt(6);
-    var distance = Math.randInt(1, 4);
-    while (--distance) {
-      var cand = p.go(dir);
-      if (!water.set(cand)) {
-        break;
-      }
-      p = cand;
-    }
-  }
-  ww.addPlot(water);
-
   addEnv('rock', 20);
   addEnv('wood', 5);
   addEnv('tree', 15);
@@ -154,7 +146,7 @@ InventoryManager.prototype.combine = function(itemA, itemB) {
 };
 
 window.addEventListener('load', function() {
-  var world = buildWorld(28, 16);
+  var world = buildWorld(new Size(28, 16));
 
   for (var i = 0; i < 2; i++) {
     var e = new CupEnt();
