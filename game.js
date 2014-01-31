@@ -61,7 +61,7 @@ var buildWorld = function(width, height) {
       p = cand;
     }
   }
-  ww.el_.appendChild(dirt.render());
+  ww.addPlot(dirt);
 
   // Draw a semi-random path of plot (dirt for now).
   var water = new WaterPlot(ww);
@@ -77,7 +77,7 @@ var buildWorld = function(width, height) {
       p = cand;
     }
   }
-  ww.el_.appendChild(water.render());
+  ww.addPlot(water);
 
   addEnv('rock', 20);
   addEnv('wood', 5);

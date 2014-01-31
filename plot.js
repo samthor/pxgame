@@ -2,12 +2,13 @@
 /**
  *
  */
-var Plot = function(world) {
+var Plot = function(world, solid) {
   Object.assert(world instanceof pxgame.World, "Plot is based on world");
   this.w_ = world;  // store world for later
   this.width = world.width;
   this.height = world.height;
   this.id = 'plot' + (++Plot.id);
+  this.solid = solid || false;
 
   var size = Math.ceil(this.width * this.height / Plot.BITSIZE);
   this.plot_ = new Uint32Array(size);
@@ -184,7 +185,7 @@ Plot.prototype.render = function() {
 };
 
 var WaterPlot = Object.subclass(Plot, function(world) {
-  WaterPlot.super.call(this, world);
+  WaterPlot.super.call(this, world, true);
   return this;
 });
 
@@ -207,7 +208,7 @@ WaterPlot.prototype.render = function() {
 };
 
 var DirtPlot = Object.subclass(Plot, function(world, res) {
-  DirtPlot.super.call(this, world);
+  DirtPlot.super.call(this, world, false);
   this.res_ = res;
   return this;
 });

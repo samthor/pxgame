@@ -104,6 +104,8 @@ pxgame.World = function(holder, width, height) {
   this.ents_ = {};
   this.moving_ = {};
 
+  this.plots_ = [];
+
   // Highlight the currently focused hex, and manage mouse events.
   (function() {
     var pointAt = function(ev) {
@@ -298,7 +300,15 @@ pxgame.World.prototype.isValidPoint = function(point) {
 pxgame.World.prototype.at = function(point) {
   var idx = this.idx_(point);
   if (idx != -1) {
-    return this.map_[idx];
+    var v = this.map_[idx];
+    if (!v) {
+      this.plots_.forEach(function(plot) {
+        if (plot.solid) {
+          v |= plot.get(point);
+        }
+      });
+    }
+    return v;
   }
   return true;
 };
@@ -349,6 +359,17 @@ pxgame.World.prototype.place = function(e, point) {
   this.ents_[e.id].point = point;
   this.map_[idx] = e;
   this.placeAtPoint_(e.el_, point);  // do css placement
+};
+
+// TODO DOCS
+pxgame.World.prototype.addPlot = function(plot) {
+  if (this.plots_.indexOf(plot) != -1) {
+    throw new Error("can't add plot twice");
+  }
+
+  // TODO: technically a plot is mutable :()
+  this.plots_.push(plot);
+  this.el_.appendChild(plot.render());
 };
 
 pxgame.World.prototype.remove = function(e) {
