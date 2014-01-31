@@ -35,14 +35,14 @@ var canvasFromImageIndex = function(icon, index) {
 var buildWorld = function(size) {
   var ww = new pxgame.World(document.body, size);
 
-  var randWalk = function(plot) {
+  var randWalk = function(plot, dimen) {
     var p = ww.size.rand();
     for (var i = 0; i < 80; ++i) {
       var dir = Math.randInt(6);
       var distance = Math.randInt(1, 4);
       while (--distance) {
         var cand = p.go(dir);
-        if (!plot.set(cand)) {
+        if (!plot.set(cand, dimen)) {
           break;
         }
         p = cand;
@@ -55,7 +55,7 @@ var buildWorld = function(size) {
   ww.addPlot(dirt);
 
   var water = new WaterPlot(ww.size);
-  randWalk(water);
+  randWalk(water, 2);
   ww.addPlot(water);
 
   // Add environment.
