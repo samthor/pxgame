@@ -225,6 +225,9 @@ Point.prototype.search = function(target, callback, steps) {
   steps = steps || 100;  // default 100 steps
   for (var i = 0; i < steps; ++i) {
     var next = queue.shift();
+    if (!next) {
+      break;  // no more points; rare but possible
+    }
 
     // Check for success; the next point is the target.
     if (next.point.equals(target)) {
