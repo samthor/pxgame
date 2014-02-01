@@ -29,6 +29,17 @@ div.world > li {
   transition: opacity 0.1s ease-out;
 }
 
+div.world > li span.annot {
+  /** exists at a specific point above the ent */
+  display: inline-block;
+  position: absolute;
+  bottom: 48px;
+  left: 16px;
+  width: 0px;
+  height: 0px;
+  z-index: 9999;
+}
+
 div.world > li img {
   position: absolute;
   bottom: 0;
@@ -47,7 +58,6 @@ div.world > li.item img {
 
 div.world > li.hover {
   display: block;
-  z-index: 999;
   font-size: 42px;
   font-weight: bold;
   cursor: pointer;
@@ -60,11 +70,7 @@ div.world > li.hover::before {
   top: -18px;
   left: -3px;
   color: white;
-  opacity: 0.5;
-}
-
-div.world > li.hover:active::before {
-  color: #0ca1fd;
+  opacity: 0.75;
 }
 
 div.world > li.rock {
