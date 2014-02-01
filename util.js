@@ -193,7 +193,7 @@ Board.prototype.access = function(point, value) {
 
   if (value === undefined) {
     // get only, return current bitset
-    return curr;
+    return !!curr;
   }
 
   var truthy = !!value;

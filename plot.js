@@ -25,8 +25,16 @@ Plot.prototype.canvas_ = function() {
   return canvas;
 };
 
-Plot.prototype.noise_ = function(canvas) {
+/**
+ * Draws noise, in the form of circles, onto the passed canvas.
+ *
+ * @param {Canvas} canvas to draw on
+ * @param {number=} count of circles
+ */
+Plot.prototype.noise_ = function(canvas, count) {
   var ctx = canvas.getContext('2d');
+  count = count || 32;
+
   this.forEach_(function(point) {
     // draw some noise!
     ctx.save();
@@ -35,7 +43,7 @@ Plot.prototype.noise_ = function(canvas) {
     ctx.translate(radius, radius);
 
     // draw n random circles nearby?
-    for (var j = 0; j < 32; ++j) {
+    for (var j = 0; j < count; ++j) {
       var x = Math.randInt(-radius, radius);
       var y = Math.randInt(-radius, radius);
 
@@ -60,13 +68,56 @@ Plot.prototype.noise_ = function(canvas) {
 };
 
 /**
+ * Draws regular squares over the set points on the canvas.
+ */
+Plot.prototype.squares_ = function(canvas, fillStyle, strokeStyle, lineWidth) {
+  var ctx = canvas.getContext('2d');
+  ctx.fillStyle = fillStyle || 'white';
+  ctx.strokeStyle = fillStyle || 'white';
+  ctx.lineWidth = lineWidth || 0.0;
+
+  var halfgrid = (pxgame.const.GRID / 2);
+
+  this.forEach_(function(point) {
+    ctx.save();
+    ctx.translate((pxgame.const.GRID * point.x) + (point.y * (pxgame.const.GRID / 2)), pxgame.const.GRID * point.y);
+
+    var tleft = 1;
+    var tright = 2;
+    if (point.y % 2) {
+      tleft = 5;
+      tright = 4;
+    }
+
+    var bx = 0;
+    var ex = 0;
+    if (this.get(point.go(tleft))) {
+      // left (up or down) is set
+      bx -= halfgrid;
+      ex += halfgrid;
+    }
+    if (this.get(point.go(tright))) {
+      // right (up or down) is set
+      ex += halfgrid;
+    }
+
+    // draw normal thing
+    ctx.rect(bx, 0, pxgame.const.GRID + ex, pxgame.const.GRID);
+    // ctx.stroke();
+    ctx.fill();
+
+    ctx.restore();
+  });
+};
+
+/**
  * Draws lines between all set points onto the passed canvas. Lines are
  * described as a mapping between size and the RGBA color drawn (e.g.,
  * {32: "96, 0, 96, 0.2"}).
  *
- * @param {Canvas} canvas Canvas to draw on
- * @param {Object} lines Lines to render
- @ @param {number=} offset Vertical offset for line drawing, in pixels
+ * @param {Canvas} canvas to draw on
+ * @param {Object} lines to render
+ * @param {number=} offset for line drawing, in pixels, vertically
  */
 Plot.prototype.lines_ = function(canvas, lines, offset) {
   var ctx = canvas.getContext('2d');
@@ -144,6 +195,10 @@ Plot.prototype.render = function() {
   Object.assert(false, "Plot.render must be implemented");
 };
 
+/**
+ * WaterPlot renders water with a shorebank. It does not take any resource
+ * to blit, and is by default solid.
+ */
 var WaterPlot = Object.subclass(Plot, function(world) {
   WaterPlot.super.call(this, world, true);
   return this;
@@ -167,6 +222,10 @@ WaterPlot.prototype.render = function() {
   return canvas;
 };
 
+/**
+ * DirtPlot renders something like a dirt path: using the passed res to create
+ * areas that look 'rough around the edges'.
+ */
 var DirtPlot = Object.subclass(Plot, function(world, res) {
   DirtPlot.super.call(this, world, false);
   this.res_ = res;
