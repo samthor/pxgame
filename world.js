@@ -101,8 +101,8 @@ pxgame.World = function(holder, size) {
   // Highlight the currently focused hex, and manage mouse events.
   (function() {
     var pointAt = function(ev) {
-      var x = ev.x - world.offsetLeft;
-      var y = ev.y - world.offsetTop;
+      var x = ev.pageX - world.offsetLeft;
+      var y = ev.pageY - world.offsetTop;
       return Point.make(x, y, pxgame.const.GRID);
     };
 
