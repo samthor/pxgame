@@ -13,6 +13,12 @@ div.world {
   -ms-user-select: none;
   user-select: none;
   background: #328038;
+  opacity: 0.5;
+  transition: opacity 0.25s;
+}
+
+div.world.active {
+  opacity: 1.0;
 }
 
 div.world > canvas {
@@ -105,7 +111,7 @@ div.world > li.tree {
   height: 96px;
   opacity: 0.75;
   pointer-events: visible;  /* allows hover */
-  transition: opacity 0.2s;
+  transition: opacity 0.1s;
 }
 div.world > li.tree:hover { opacity: 0.25; }
 div.world > li.tree1,

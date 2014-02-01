@@ -85,6 +85,7 @@ pxgame.Actor = Object.subclass(pxgame.Ent, function(img) {
  */
 pxgame.World = function(holder, size) {
   this.size = size;
+  this.loop_ = null;
 
   var world = document.createElement('div');
   world.classList.add('world');
@@ -129,18 +130,36 @@ pxgame.World = function(holder, size) {
     }.bind(this));
   }.apply(this));
 
-  // Game "loop": enact moves around the map.
-  window.setInterval(function() {
-    for (var k in this.moving_) {
-      var desc = this.moving_[k];
-      var ret = this.performMoveStep_(desc.ent, desc.point, desc.move);
-      if (ret != undefined) {
-        this.moveDone_(desc.ent, ret);
-      }
-    }
-  }.bind(this), 1000 * pxgame.const.FRAME);
-
   return this;
+};
+
+/** Step performs a single game "loop" step. */
+pxgame.World.prototype.step_ = function() {
+  for (var k in this.moving_) {
+    var desc = this.moving_[k];
+    var ret = this.performMoveStep_(desc.ent, desc.point, desc.move);
+    if (ret != undefined) {
+      this.moveDone_(desc.ent, ret);
+    }
+  }
+};
+
+/** Hits 'play' on this World. Idempotent. */
+pxgame.World.prototype.play = function() {
+  if (!this.loop_) {
+    var ms = 1000 * pxgame.const.FRAME;
+    this.loop_ = window.setInterval(this.step_.bind(this), ms);
+    this.el_.classList.add('active');
+  }
+};
+
+/** Hits 'pause' on this World. Idempotent. */
+pxgame.World.prototype.pause = function() {
+  if (this.loop_) {
+    window.clearInterval(this.loop_);
+    this.loop_ = null;
+    this.el_.classList.remove('active');
+  }
 };
 
 /**

@@ -208,4 +208,6 @@ window.addEventListener('load', function() {
       }
     });
   };
+
+  world.play();
 });
