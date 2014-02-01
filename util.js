@@ -85,6 +85,11 @@ var Size = function(width, height) {
   return this;
 };
 
+/** Does this Size equal another Size? */
+Size.prototype.equals = function(other) {
+  return this == other || (this.width == other.width && this.height == other.height);
+};
+
 /**
  * Style a given HTMLElement or CSSStyleDeclaration to contain this Size.
  *
@@ -202,6 +207,24 @@ Board.prototype.access = function(point, value) {
     }
   }
   return truthy;
+};
+
+/**
+ * Combines several boards, returning a new Board that contains just the bitset
+ * (true/false) values only. Each board must be of the same Size.
+ *
+ * Accepts several arguments.
+ */
+Board.combine = function(board) {
+  var out = new Board(board.size);
+  for (var i = 0; i < arguments.length; ++i) {
+    board = arguments[i];
+    Object.assert(board.size.equals(out.size), "May only combine boards of equal size");
+    for (var j = 0; j < out.bitset_.length; ++j) {
+      out.bitset_[j] |= board.bitset_[j];
+    }
+  }
+  return out;
 };
 
 /**
