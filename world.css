@@ -53,13 +53,12 @@ div.world > li img {
 }
 
 div.world > li.actor {
-  /* TODO: Adding 'transform' here breaks '-webkit-transform'? */
-  transition: -webkit-transform 0.25s;
+  transition: transform 0.25s;
 }
 
 div.world > li.item img {
   margin: -1px;  /* the item images are all 34x34 */
-/*  -webkit-filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.25));*/
+/*  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.25));*/
 }
 
 div.world > li.hover {

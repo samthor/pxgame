@@ -9,8 +9,6 @@ body {
   min-height: 90%;
   padding: 0 1em 1em;
 	background: #1a1a1a;
-	background: -moz-radial-gradient(center, closest-side, #4a4a4a, #1a1a1a);
-	background: -webkit-radial-gradient(center, closest-side, #4a4a4a, #1a1a1a);
 	background: radial-gradient(center, closest-side, #4a4a4a, #1a1a1a);
 }
 
@@ -44,7 +42,7 @@ div.feature img.item {
   display: inline-block;
   float: left;
   cursor: pointer;
-  -webkit-transition: opacity 0.1s, background 0.1s;
+  transition: opacity 0.1s, background 0.1s;
 }
 
 div.feature img.item.dragged {
