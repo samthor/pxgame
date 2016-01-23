@@ -83,20 +83,6 @@ div.world > li.rock {
 }
 div.world > li.rock1 { background-position: 32px 0; }
 
-div.world > li.grass {
-  background: url(res/grass.png);
-}
-div.world > li.grass0 { background-position: 0 32px; }
-div.world > li.grass1 { background-position: 32px 32px; }
-div.world > li.grass2 { background-position: 64px 32px; }
-div.world > li.grass3 { background-position: 0px -32px; }
-div.world > li.grass4 { background-position: 0px 0px; }
-
-div.world > li.water {
-  background: url(res/watergrass.png);
-}
-div.world > li.water1 { background-position: 0px -32px; }
-
 div.world > li.wood {
   background: url(res/wood.png);
 }
